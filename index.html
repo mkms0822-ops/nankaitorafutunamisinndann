@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>南海トラフ 津波避難診断｜あなたの地点はどれくらい危険？</title>
+<style>
+  :root{
+    --bg:#0a1420;
+    --panel:#11202f;
+    --panel2:#152838;
+    --line:#23394d;
+    --ink:#eaf2fa;
+    --muted:#8aa3bb;
+    --sea:#1f9be0;
+    --sea-deep:#0d6fb0;
+    --warn:#ffb02e;
+    --danger:#ff4d4f;
+    --crit:#ff2d2d;
+    --safe:#1fc77d;
+    --radius:16px;
+    --font:"Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",system-ui,sans-serif;
+    --num:"Bebas Neue","Arial Narrow",sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1100px 500px at 50% -5%, #14324d 0%, transparent 55%),
+      var(--bg);
+    background-color:var(--bg);
+    color:var(--ink);font-family:var(--font);line-height:1.7;
+    min-height:100vh;min-height:100dvh;
+    padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  }
+  .wrap{max-width:680px;margin:0 auto;padding:22px 16px 70px;}
+
+  /* ヘッダー */
+  .hero{text-align:center;margin-bottom:26px;}
+  .hero .wave{font-size:40px;line-height:1;margin-bottom:6px;}
+  .hero h1{font-size:23px;margin:0 0 8px;letter-spacing:.01em;}
+  .hero h1 b{color:var(--sea);}
+  .hero p{font-size:13px;color:var(--muted);margin:0;}
+
+  /* カード共通 */
+  .card{
+    background:linear-gradient(180deg,var(--panel2),var(--panel));
+    border:1px solid var(--line);border-radius:var(--radius);
+    padding:20px 18px;margin-bottom:16px;
+  }
+  .card h2{font-size:15px;margin:0 0 16px;display:flex;align-items:center;gap:9px;}
+  .card h2 .step{
+    flex:0 0 24px;width:24px;height:24px;border-radius:7px;background:var(--sea);
+    color:#fff;font-size:13px;font-weight:700;display:grid;place-items:center;
+  }
+
+  label.fld{display:block;margin-bottom:14px;}
+  label.fld:last-child{margin-bottom:0;}
+  label.fld .lbl{font-size:13px;color:var(--muted);margin-bottom:6px;display:block;}
+  select,input[type=text]{
+    width:100%;padding:13px 12px;border-radius:11px;
+    background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    font-family:inherit;font-size:16px;appearance:none;
+  }
+  select:focus,input:focus{outline:none;border-color:var(--sea);box-shadow:0 0 0 3px rgba(31,155,224,.18);}
+  select:disabled{opacity:.45;}
+  .select-wrap{position:relative;}
+  .select-wrap::after{
+    content:"▾";position:absolute;right:14px;top:50%;transform:translateY(-50%);
+    color:var(--muted);pointer-events:none;font-size:12px;
+  }
+
+  .btn-go{
+    width:100%;margin-top:4px;padding:16px;border:none;border-radius:13px;cursor:pointer;
+    background:linear-gradient(100deg,var(--sea-deep),var(--sea));color:#fff;
+    font-family:inherit;font-size:17px;font-weight:700;letter-spacing:.04em;
+    box-shadow:0 6px 20px rgba(31,155,224,.35);display:flex;align-items:center;justify-content:center;gap:8px;
+  }
+  .btn-go:active{transform:scale(.99);}
+  .btn-go:disabled{opacity:.4;box-shadow:none;cursor:not-allowed;}
+
+  /* 結果 */
+  #result{display:none;}
+  #result.show{display:block;animation:fade .3s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+  .verdict{
+    border-radius:var(--radius);padding:20px 18px;margin-bottom:16px;
+    border:1px solid var(--line);position:relative;overflow:hidden;
+  }
+  .verdict .place{font-size:13px;color:var(--muted);margin-bottom:4px;}
+  .verdict .head{font-size:21px;font-weight:800;line-height:1.3;margin-bottom:8px;}
+  .verdict .desc{font-size:14px;}
+  .verdict.lv-crit{background:linear-gradient(160deg,rgba(255,45,45,.16),var(--panel));border-color:rgba(255,45,45,.4);}
+  .verdict.lv-crit .head{color:#ff6b6d;}
+  .verdict.lv-high{background:linear-gradient(160deg,rgba(255,77,79,.12),var(--panel));border-color:rgba(255,77,79,.32);}
+  .verdict.lv-high .head{color:#ff7a45;}
+  .verdict.lv-mid{background:linear-gradient(160deg,rgba(255,176,46,.12),var(--panel));border-color:rgba(255,176,46,.32);}
+  .verdict.lv-mid .head{color:var(--warn);}
+  .verdict.lv-low{background:linear-gradient(160deg,rgba(31,199,125,.1),var(--panel));border-color:rgba(31,199,125,.3);}
+  .verdict.lv-low .head{color:var(--safe);}
+
+  .metrics{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+  .metric{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:16px 14px;text-align:center;
+  }
+  .metric .mlabel{font-size:12px;color:var(--muted);margin-bottom:6px;}
+  .metric .mval{font-family:var(--num);font-size:46px;line-height:.95;letter-spacing:.02em;}
+  .metric .munit{font-size:15px;font-family:var(--font);color:var(--muted);margin-left:3px;}
+  .metric.time .mval{color:var(--warn);}
+  .metric.height .mval{color:var(--sea);}
+  .metric .mnote{font-size:11px;color:var(--muted);margin-top:5px;}
+
+  .escape{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:16px;margin-bottom:16px;
+  }
+  .escape .et{font-size:13px;color:var(--muted);margin-bottom:8px;}
+  .escape .ev{font-size:16px;font-weight:700;line-height:1.5;}
+  .escape .ev b{font-family:var(--num);font-size:26px;color:var(--sea);letter-spacing:.02em;vertical-align:-2px;}
+  .escape.warn .ev{color:#ff7a45;}
+
+  .actions{display:flex;flex-direction:column;gap:10px;margin-bottom:18px;}
+  .act{
+    display:flex;align-items:center;gap:12px;text-decoration:none;
+    background:var(--panel);border:1px solid var(--line);border-radius:13px;
+    padding:14px 16px;color:var(--ink);transition:border-color .15s;
+  }
+  .act:hover{border-color:var(--sea);}
+  .act .ic{flex:0 0 24px;font-size:22px;text-align:center;}
+  .act .tx{flex:1;}
+  .act .tx .t{font-weight:700;font-size:15px;}
+  .act .tx .s{font-size:12px;color:var(--muted);}
+  .act .ar{color:var(--muted);font-size:18px;}
+  .act.primary{background:linear-gradient(100deg,var(--sea-deep),var(--sea));border:none;color:#fff;}
+  .act.primary .tx .s{color:rgba(255,255,255,.85);}
+  .act.primary .ar{color:#fff;}
+
+  .steps-mini{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:16px;
+  }
+  .steps-mini .st{font-size:13px;color:var(--muted);margin-bottom:10px;font-weight:700;}
+  .steps-mini ol{margin:0;padding-left:20px;}
+  .steps-mini li{margin-bottom:7px;font-size:14px;}
+  .steps-mini li:last-child{margin-bottom:0;}
+  .steps-mini li b{color:var(--ink);}
+
+  .disclaimer{
+    font-size:11.5px;color:var(--muted);line-height:1.7;
+    background:rgba(255,176,46,.07);border:1px solid rgba(255,176,46,.25);
+    border-radius:12px;padding:13px 14px;margin-bottom:14px;
+  }
+  .disclaimer b{color:var(--warn);}
+  .src{font-size:11px;color:var(--muted);text-align:center;margin-top:10px;}
+  .src a{color:var(--sea);}
+
+  .reset{
+    display:block;width:100%;margin-top:6px;background:none;
+    border:1px solid var(--line);color:var(--muted);font:inherit;font-size:14px;
+    padding:13px;border-radius:12px;cursor:pointer;
+  }
+  .reset:hover{border-color:var(--sea);color:var(--ink);}
+
+  /* 共有・コピー */
+  .share-card{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:16px;margin-bottom:16px;
+  }
+  .share-card .sh-title{font-size:13px;color:var(--muted);font-weight:700;margin-bottom:12px;}
+  .share-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+  .share-btn{
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    text-decoration:none;border:1px solid var(--line);border-radius:11px;
+    padding:13px 10px;color:var(--ink);font-size:14px;font-weight:700;
+    background:var(--panel2);cursor:pointer;font-family:inherit;transition:transform .1s,border-color .15s;
+  }
+  .share-btn:active{transform:scale(.97);}
+  .share-btn .si{font-size:18px;}
+  .share-btn.line{background:#06c755;border-color:#06c755;color:#fff;}
+  .share-btn.sms{background:#34c759;border-color:#34c759;color:#fff;}
+  .share-btn.mail{background:#3478f6;border-color:#3478f6;color:#fff;}
+  .share-btn.copy{background:var(--panel2);}
+  .share-btn.copy.done{border-color:var(--safe);color:var(--safe);}
+  .share-btn.family{grid-column:1/-1;background:linear-gradient(100deg,var(--sea-deep),var(--sea));border:none;color:#fff;font-size:15px;padding:15px;}
+  .share-btn.native{grid-column:1/-1;}
+
+  .dwa-link{
+    display:flex;align-items:center;gap:12px;text-decoration:none;
+    background:linear-gradient(160deg,rgba(255,45,45,.12),var(--panel));
+    border:1px solid rgba(255,45,45,.3);border-radius:14px;
+    padding:15px 16px;margin-bottom:16px;color:var(--ink);
+  }
+  .dwa-link .dl-ic{flex:0 0 38px;width:38px;height:38px;border-radius:10px;background:var(--crit);display:grid;place-items:center;font-size:20px;}
+  .dwa-link .dl-tx{flex:1;}
+  .dwa-link .dl-tx .t{font-weight:700;font-size:15px;}
+  .dwa-link .dl-tx .s{font-size:12px;color:var(--muted);}
+  .dwa-link .dl-ar{color:var(--muted);font-size:18px;}
+
+  .reset-row{display:flex;gap:10px;}
+  .reset-row .reset{margin-top:0;flex:1;}
+  .reset-row .reset.again{border-color:var(--sea);color:var(--sea);font-weight:700;}
+
+  .pill{display:inline-block;font-size:11px;padding:3px 9px;border-radius:999px;margin-left:6px;vertical-align:1px;}
+  .pill.crit{background:rgba(255,45,45,.2);color:#ff8a8b;}
+  .pill.low{background:rgba(31,199,125,.18);color:var(--safe);}
+
+  @media(max-width:380px){
+    .hero h1{font-size:20px;}
+    .metric .mval{font-size:38px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="wave">🌊</div>
+    <h1>南海トラフ <b>津波避難診断</b></h1>
+    <p>あなたの地点に、津波は何分で・何メートル来るのか。<br>逃げ切れるのかを確認しましょう。</p>
+  </div>
+
+  <!-- 入力 -->
+  <div class="card" id="inputCard">
+    <h2><span class="step">1</span>お住まい・確認したい場所</h2>
+    <label class="fld">
+      <span class="lbl">都道府県</span>
+      <span class="select-wrap"><select id="pref"><option value="">選択してください</option></select></span>
+    </label>
+    <label class="fld">
+      <span class="lbl">市区町村</span>
+      <span class="select-wrap"><select id="city" disabled><option value="">先に都道府県を選択</option></select></span>
+    </label>
+    <label class="fld">
+      <span class="lbl">詳しい住所（任意・避難場所の検索に使います）</span>
+      <input type="text" id="addr" placeholder="例：○○町1-2-3、△△小学校の近く など" autocomplete="off">
+    </label>
+    <button class="btn-go" id="goBtn" disabled>🌊 津波リスクを診断する</button>
+  </div>
+
+  <!-- 結果 -->
+  <div id="result"></div>
+
+</div>
+
+<script>
+/* =======================================================================
+   データ出典：
+   内閣府「南海トラフの巨大地震モデル検討会（第二次報告）」(平成24年8月)
+   都府県別市町村別 津波高・津波到達時間一覧表 等の公表値より作成。
+   ・height = 最大クラスの想定 最大津波高(m)
+   ・arrive = 津波(高さ1m級)の最短到達時間(分)。"0"前後は「ただちに/数分」。
+   数値は満潮位・堤防全損などの最悪条件を含む想定であり、概数。
+   実際の値は各自治体の最新ハザードマップが優先。
+   ======================================================================= */
+const DATA = {
+  "静岡県":{
+    coastal:true,
+    cities:{
+      "下田市":{h:33,t:13},"南伊豆町":{h:27,t:9},"沼津市":{h:10,t:6},
+      "静岡市清水区":{h:11,t:14},"焼津市":{h:13,t:8},"御前崎市":{h:19,t:6},
+      "牧之原市":{h:16,t:9},"浜松市":{h:15,t:13},"湖西市":{h:14,t:35},
+      "伊東市":{h:12,t:11},"熱海市":{h:10,t:14},"掛川市":{h:14,t:11},
+      "磐田市":{h:13,t:13},"袋井市":{h:11,t:14},"吉田町":{h:14,t:10},
+    }
+  },
+  "愛知県":{
+    coastal:true,
+    cities:{
+      "田原市":{h:22,t:42},"豊橋市":{h:18,t:55},"南知多町":{h:9,t:46},
+      "西尾市":{h:7,t:62},"蒲郡市":{h:5,t:79},"常滑市":{h:6,t:63},
+      "名古屋市港区":{h:4,t:96},"碧南市":{h:4,t:84},"美浜町":{h:8,t:50},
+    }
+  },
+  "三重県":{
+    coastal:true,
+    cities:{
+      "尾鷲市":{h:17,t:6},"熊野市":{h:18,t:5},"紀北町":{h:16,t:7},
+      "南伊勢町":{h:20,t:7},"志摩市":{h:18,t:8},"鳥羽市":{h:14,t:11},
+      "伊勢市":{h:10,t:36},"津市":{h:10,t:55},"松阪市":{h:8,t:62},
+      "御浜町":{h:17,t:5},"紀宝町":{h:16,t:5},"大紀町":{h:18,t:8},
+    }
+  },
+  "和歌山県":{
+    coastal:true,
+    cities:{
+      "串本町":{h:18,t:3},"那智勝浦町":{h:15,t:7},"太地町":{h:14,t:8},
+      "新宮市":{h:15,t:6},"白浜町":{h:17,t:6},"すさみ町":{h:18,t:4},
+      "田辺市":{h:14,t:8},"御坊市":{h:11,t:24},"美浜町":{h:12,t:22},
+      "和歌山市":{h:8,t:40},"海南市":{h:9,t:38},"有田市":{h:10,t:34},
+      "広川町":{h:11,t:21},"湯浅町":{h:11,t:23},"由良町":{h:13,t:16},
+      "印南町":{h:13,t:13},"みなべ町":{h:14,t:9},
+    }
+  },
+  "徳島県":{
+    coastal:true,
+    cities:{
+      "美波町":{h:14,t:9},"海陽町":{h:18,t:8},"牟岐町":{h:15,t:9},
+      "阿南市":{h:12,t:17},"徳島市":{h:6,t:55},"小松島市":{h:8,t:36},
+      "鳴門市":{h:5,t:62},"松茂町":{h:5,t:60},"北島町":{h:4,t:75},
+    }
+  },
+  "高知県":{
+    coastal:true,
+    cities:{
+      "黒潮町":{h:34,t:2},"土佐清水市":{h:34,t:7},"四万十町":{h:24,t:6},
+      "大月町":{h:24,t:4},"宿毛市":{h:21,t:18},"須崎市":{h:20,t:12},
+      "高知市":{h:16,t:16},"南国市":{h:16,t:18},"安芸市":{h:16,t:13},
+      "室戸市":{h:24,t:6},"東洋町":{h:24,t:5},"中土佐町":{h:19,t:7},
+      "土佐市":{h:18,t:13},"芸西村":{h:16,t:13},"奈半利町":{h:18,t:9},
+      "田野町":{h:18,t:11},"四万十市":{h:18,t:9},"香南市":{h:16,t:16},
+    }
+  },
+  "宮崎県":{
+    coastal:true,
+    cities:{
+      "宮崎市":{h:12,t:15},"日南市":{h:15,t:13},"串間市":{h:16,t:14},
+      "延岡市":{h:13,t:17},"日向市":{h:13,t:16},"門川町":{h:14,t:15},
+      "都農町":{h:11,t:18},"川南町":{h:11,t:19},
+    }
+  },
+  "大分県":{
+    coastal:true,
+    cities:{
+      "佐伯市":{h:14,t:17},"臼杵市":{h:9,t:48},"津久見市":{h:11,t:42},
+      "大分市":{h:6,t:65},"別府市":{h:5,t:73},
+    }
+  },
+  "兵庫県":{
+    coastal:true,
+    cities:{
+      "南あわじ市":{h:8,t:43},"洲本市":{h:7,t:62},"淡路市":{h:5,t:75},
+      "神戸市":{h:4,t:100},"姫路市":{h:4,t:110},
+    }
+  },
+  "大阪府":{
+    coastal:true,
+    cities:{
+      "大阪市":{h:5,t:110},"堺市":{h:4,t:115},"岸和田市":{h:4,t:113},
+      "泉佐野市":{h:4,t:108},"阪南市":{h:5,t:100},"泉南市":{h:4,t:105},
+    }
+  },
+  "愛媛県":{
+    coastal:true,
+    cities:{
+      "愛南町":{h:11,t:24},"宇和島市":{h:7,t:42},"八幡浜市":{h:5,t:78},
+      "西予市":{h:6,t:55},"伊方町":{h:6,t:60},
+    }
+  },
+  "香川県":{
+    coastal:true,
+    cities:{"高松市":{h:4,t:90},"丸亀市":{h:3,t:100},"坂出市":{h:3,t:105}}
+  },
+  "岡山県":{
+    coastal:true,
+    cities:{"岡山市":{h:3,t:170},"倉敷市":{h:3,t:160},"玉野市":{h:4,t:130}}
+  },
+  "東京都":{
+    coastal:true, note:"島しょ部",
+    cities:{"新島村":{h:29,t:9},"神津島村":{h:18,t:14},"三宅村":{h:13,t:11},"八丈町":{h:11,t:18}}
+  },
+  "千葉県":{
+    coastal:true,
+    cities:{"館山市":{h:11,t:23},"南房総市":{h:11,t:21},"鴨川市":{h:12,t:20},"いすみ市":{h:11,t:25}}
+  },
+  "神奈川県":{
+    coastal:true,
+    cities:{"鎌倉市":{h:10,t:25},"藤沢市":{h:9,t:27},"小田原市":{h:10,t:22},"横須賀市":{h:9,t:30}}
+  },
+};
+
+/* 内陸など、津波の直接被害想定がない府県（リスト用） */
+const INLAND_PREFS = ["北海道","青森県","岩手県","宮城県","秋田県","山形県","福島県","茨城県","栃木県","群馬県","埼玉県","新潟県","富山県","石川県","福井県","山梨県","長野県","岐阜県","滋賀県","京都府","奈良県","鳥取県","島根県","広島県","山口県","福岡県","佐賀県","長崎県","熊本県","鹿児島県","沖縄県"];
+
+/* ---------- 危険度判定 ---------- */
+function levelOf(t,h){
+  // 到達時間が短い or 津波が高いほど危険
+  if(t<=5 || h>=20) return {key:'crit', label:'極めて高い危険', pill:'最優先で対策を'};
+  if(t<=10 || h>=10) return {key:'high', label:'高い危険', pill:''};
+  if(t<=30 || h>=5) return {key:'mid', label:'中程度の危険', pill:''};
+  return {key:'low', label:'比較的低い危険', pill:''};
+}
+
+/* ---------- 避難可能距離（消防庁指針ベース） ----------
+   歩行速度 約60m/分、避難開始まで2〜5分を差し引いた目安 */
+function escapeDistance(t){
+  const prep = 3;            // 避難開始までの準備(分)
+  const speed = 60;          // m/分（夜間や高齢者はさらに低下）
+  const usable = Math.max(0, t - prep);
+  return {usable, dist: Math.round(usable*speed), prep, speed};
+}
+
+/* ---------- セレクト構築 ---------- */
+const prefSel = document.getElementById('pref');
+const citySel = document.getElementById('city');
+const addrInp = document.getElementById('addr');
+const goBtn = document.getElementById('goBtn');
+
+(function initPref(){
+  const coastal = Object.keys(DATA);
+  const optg1 = document.createElement('optgroup'); optg1.label='― 太平洋沿岸（津波想定あり）―';
+  coastal.forEach(p=>{ const o=document.createElement('option'); o.value=p; o.textContent=p; optg1.appendChild(o); });
+  prefSel.appendChild(optg1);
+  const optg2 = document.createElement('optgroup'); optg2.label='― その他の地域 ―';
+  INLAND_PREFS.forEach(p=>{ const o=document.createElement('option'); o.value=p; o.textContent=p; optg2.appendChild(o); });
+  prefSel.appendChild(optg2);
+})();
+
+prefSel.addEventListener('change', ()=>{
+  const p = prefSel.value;
+  citySel.innerHTML='';
+  if(!p){ citySel.disabled=true; citySel.innerHTML='<option value="">先に都道府県を選択</option>'; checkReady(); return; }
+  if(DATA[p]){
+    citySel.disabled=false;
+    citySel.innerHTML='<option value="">市区町村を選択</option>';
+    Object.keys(DATA[p].cities).forEach(c=>{
+      const o=document.createElement('option'); o.value=c; o.textContent=c; citySel.appendChild(o);
+    });
+    const o2=document.createElement('option'); o2.value='__other__'; o2.textContent='上記以外の市区町村';
+    citySel.appendChild(o2);
+  } else {
+    // 内陸：市区町村入力をスキップして直接案内
+    citySel.disabled=true;
+    citySel.innerHTML='<option value="">この地域は津波の直接想定なし</option>';
+  }
+  checkReady();
+});
+citySel.addEventListener('change', checkReady);
+
+function checkReady(){
+  const p=prefSel.value;
+  if(!p){ goBtn.disabled=true; return; }
+  if(!DATA[p]){ goBtn.disabled=false; return; } // 内陸はそのまま診断可
+  goBtn.disabled = !citySel.value;
+}
+
+/* ---------- 診断実行 ---------- */
+goBtn.addEventListener('click', runDiagnosis);
+
+function runDiagnosis(){
+  const p = prefSel.value;
+  const addr = addrInp.value.trim();
+  const resEl = document.getElementById('result');
+
+  // 内陸（津波の直接想定なし）
+  if(!DATA[p]){
+    resEl.innerHTML = renderInland(p, addr);
+    buildShareText({ place:p, t:'直接の津波到達は想定なし', h:'―', level:'比較的低い（内陸）', esc:null });
+    showResult(resEl); return;
+  }
+
+  const c = citySel.value;
+  if(c==='__other__' || !DATA[p].cities[c]){
+    resEl.innerHTML = renderUnknownCity(p, addr);
+    buildShareText({ place:p, t:'要・公式ハザードマップ確認', h:'要確認', level:'津波想定地域', esc:null });
+    showResult(resEl); return;
+  }
+
+  const d = DATA[p].cities[c];
+  const lv = levelOf(d.t, d.h);
+  const esc = escapeDistance(d.t);
+  const placeLabel = p + ' ' + c + (DATA[p].note?('（'+DATA[p].note+'）'):'');
+  const searchBase = encodeURIComponent((addr? (p+c+addr):(p+c)));
+
+  const tDisp = d.t<=2 ? 'ほぼ即時' : ('約'+d.t);
+  const tUnit = d.t<=2 ? '' : '分';
+
+  resEl.innerHTML = `
+    <div class="verdict lv-${lv.key}">
+      <div class="place">${placeLabel}</div>
+      <div class="head">${lv.label}${lv.pill?`<span class="pill crit">${lv.pill}</span>`:''}</div>
+      <div class="desc">${verdictDesc(lv.key, d)}</div>
+    </div>
+
+    <div class="metrics">
+      <div class="metric time">
+        <div class="mlabel">津波の最短到達時間</div>
+        <div class="mval">${tDisp}<span class="munit">${tUnit}</span></div>
+        <div class="mnote">高さ1m級が届くまで</div>
+      </div>
+      <div class="metric height">
+        <div class="mlabel">想定 最大津波高</div>
+        <div class="mval">${d.h}<span class="munit">m</span></div>
+        <div class="mnote">最悪条件での想定</div>
+      </div>
+    </div>
+
+    ${renderEscape(esc, d.t)}
+
+    <div class="steps-mini">
+      <div class="st">🏃 いますぐ覚えておく避難の基本</div>
+      <ol>
+        <li>強い揺れ・長い揺れを感じたら、<b>警報を待たずすぐ避難</b>を始める。</li>
+        <li>目指すのは<b>「より高く・より遠く」</b>。津波避難タワー・避難ビル・高台へ。</li>
+        <li>車は使わず<b>原則徒歩</b>。渋滞で動けなくなる。</li>
+        <li>一度逃げたら<b>戻らない</b>。第二波以降が高いことも多い。</li>
+      </ol>
+    </div>
+
+    <div class="actions">
+      <a class="act primary" target="_blank" rel="noopener"
+         href="https://www.google.com/maps/search/${'%E6%B4%A5%E6%B3%A2%E9%81%BF%E9%9B%A3%E5%A0%B4%E6%89%80+'}${searchBase}">
+        <span class="ic">📍</span>
+        <span class="tx"><span class="t">最寄りの津波避難場所を探す</span>
+        <span class="s">Googleマップで「津波避難場所」を検索</span></span>
+        <span class="ar">›</span>
+      </a>
+      <a class="act" target="_blank" rel="noopener"
+         href="https://www.google.com/maps/search/${'%E9%AB%98%E5%8F%B0+'}${searchBase}">
+        <span class="ic">⛰️</span>
+        <span class="tx"><span class="t">近くの高台・高い建物を探す</span>
+        <span class="s">タワー・ビルが近くにない場合に</span></span>
+        <span class="ar">›</span>
+      </a>
+      <a class="act" target="_blank" rel="noopener"
+         href="https://disaportal.gsi.go.jp/maps/index.html?ll=&z=14">
+        <span class="ic">🗺️</span>
+        <span class="tx"><span class="t">重ねるハザードマップで浸水域を確認</span>
+        <span class="s">国土交通省・公式（自宅の浸水想定がわかる）</span></span>
+        <span class="ar">›</span>
+      </a>
+      <a class="act" target="_blank" rel="noopener"
+         href="https://www.google.com/search/?q=${encodeURIComponent(p+c+' 津波 ハザードマップ 避難場所')}">
+        <span class="ic">🏛️</span>
+        <span class="tx"><span class="t">${c}の公式ハザードマップ・避難計画</span>
+        <span class="s">自治体の最新情報がいちばん正確です</span></span>
+        <span class="ar">›</span>
+      </a>
+    </div>
+
+    ${disclaimerHtml()}
+    ${sourceHtml()}
+    ${shareBlock()}
+    ${dwaBlock()}
+    ${resetRow()}
+  `;
+  // 共有用テキストを生成して保持
+  buildShareText({
+    place: placeLabel,
+    t: (d.t<=2?'ほぼ即時(数分以内)':('約'+d.t+'分')),
+    h: d.h+'m',
+    level: lv.label,
+    esc: esc.dist,
+    escShort: (d.t<=5 || esc.dist<=120)
+  });
+  showResult(resEl);
+}
+
+function verdictDesc(key, d){
+  if(key==='crit'){
+    return `揺れが収まってから避難を始めるのでは間に合わない可能性があります。普段から避難先と経路を決め、訓練しておくことが命を分けます。`;
+  }
+  if(key==='high'){
+    return `避難の猶予はわずかです。地震を感じたら情報を待たず、ただちに高い場所へ向かってください。`;
+  }
+  if(key==='mid'){
+    return `一定の猶予はありますが油断は禁物です。あらかじめ避難先を決め、揺れたら早めに行動しましょう。`;
+  }
+  return `直接の津波到達は比較的遅い想定ですが、浸水や河川の遡上には注意が必要です。ハザードマップで自宅周辺を確認しておきましょう。`;
+}
+
+function renderEscape(esc, t){
+  if(t<=5 || esc.dist<=120){
+    return `<div class="escape warn">
+      <div class="et">⚠️ 避難可能距離の目安（歩行のみ）</div>
+      <div class="ev"><b>${esc.dist}</b> m 前後 ― 極めて短い</div>
+      <div class="et" style="margin:8px 0 0">準備に約${esc.prep}分かかると、歩いて逃げられるのはわずかな距離です。これは「すぐ近くに逃げ込める高所が必要」なレベル。避難タワー・避難ビルの位置を今すぐ確認してください。</div>
+    </div>`;
+  }
+  return `<div class="escape">
+    <div class="et">🏃 避難可能距離の目安（歩行のみ）</div>
+    <div class="ev">およそ <b>${esc.dist}</b> m 以内</div>
+    <div class="et" style="margin:8px 0 0">到達まで約${t}分のうち、準備に${esc.prep}分を引いた残り時間で、徒歩(約60m/分)で移動できる距離の目安です。夜間・高齢者・悪天候ではさらに短くなります。この範囲に避難先があるか確認を。</div>
+  </div>`;
+}
+
+function renderUnknownCity(p, addr){
+  const searchBase = encodeURIComponent(addr? (p+addr):(p));
+  return `
+    <div class="verdict lv-mid">
+      <div class="place">${p}</div>
+      <div class="head">この市区町村の個別データは未収録です</div>
+      <div class="desc">${p}は津波が想定される地域です。お住まいの市区町村の正確な想定は、公式ハザードマップで必ず確認してください。</div>
+    </div>
+    <div class="actions">
+      <a class="act primary" target="_blank" rel="noopener"
+        href="https://www.google.com/maps/search/%E6%B4%A5%E6%B3%A2%E9%81%BF%E9%9B%A3%E5%A0%B4%E6%89%80+${searchBase}">
+        <span class="ic">📍</span><span class="tx"><span class="t">最寄りの津波避難場所を探す</span>
+        <span class="s">Googleマップで検索</span></span><span class="ar">›</span></a>
+      <a class="act" target="_blank" rel="noopener" href="https://disaportal.gsi.go.jp/maps/index.html?ll=&z=12">
+        <span class="ic">🗺️</span><span class="tx"><span class="t">重ねるハザードマップで確認</span>
+        <span class="s">国土交通省・公式</span></span><span class="ar">›</span></a>
+      <a class="act" target="_blank" rel="noopener"
+        href="https://www.google.com/search/?q=${encodeURIComponent(p+' 津波 ハザードマップ 避難場所')}">
+        <span class="ic">🏛️</span><span class="tx"><span class="t">${p}の公式ハザードマップ</span>
+        <span class="s">自治体の最新情報</span></span><span class="ar">›</span></a>
+    </div>
+    ${disclaimerHtml()}${sourceHtml()}
+    ${shareBlock()}
+    ${dwaBlock()}
+    ${resetRow()}`;
+}
+
+function renderInland(p, addr){
+  return `
+    <div class="verdict lv-low">
+      <div class="place">${p}</div>
+      <div class="head">直接の津波到達は想定されていません</div>
+      <div class="desc">${p}は南海トラフ地震で津波の直接被害が想定される沿岸地域ではありません。ただし<b>強い揺れ・建物倒壊・火災・長周期地震動</b>には備えが必要です。海や川の河口付近に出かける際は、その地域の津波情報を確認してください。</div>
+    </div>
+    <div class="steps-mini">
+      <div class="st">🏠 内陸でも備えておきたいこと</div>
+      <ol>
+        <li>家具の固定・ガラス飛散防止で<b>揺れのけがを防ぐ</b>。</li>
+        <li>3日分以上の<b>水・食料・モバイルバッテリー</b>を備蓄。</li>
+        <li>家族との<b>集合場所・連絡方法</b>を決めておく。</li>
+        <li>自宅の<b>ハザードマップ</b>（土砂・洪水も）を確認。</li>
+      </ol>
+    </div>
+    <div class="actions">
+      <a class="act primary" target="_blank" rel="noopener"
+        href="https://www.google.com/maps/search/%E6%8C%87%E5%AE%9A%E7%B7%8A%E6%80%A5%E9%81%BF%E9%9B%A3%E5%A0%B4%E6%89%80+${encodeURIComponent(addr?(p+addr):p)}">
+        <span class="ic">📍</span><span class="tx"><span class="t">最寄りの避難場所を探す</span>
+        <span class="s">Googleマップで検索</span></span><span class="ar">›</span></a>
+      <a class="act" target="_blank" rel="noopener" href="https://disaportal.gsi.go.jp/maps/index.html?ll=&z=12">
+        <span class="ic">🗺️</span><span class="tx"><span class="t">重ねるハザードマップで確認</span>
+        <span class="s">国土交通省・公式</span></span><span class="ar">›</span></a>
+    </div>
+    ${sourceHtml()}
+    ${shareBlock()}
+    ${dwaBlock()}
+    ${resetRow()}`;
+}
+
+function disclaimerHtml(){
+  return `<div class="disclaimer">
+    <b>⚠️ この数値は「最大クラス」の想定です。</b>満潮位・堤防が全て損壊するなど最悪の条件を含む概数で、実際の津波と一致するとは限りません。
+    数値の大小にかかわらず、<b>強い揺れを感じたら、警報を待たず、ためらわずすぐ高い場所へ避難してください。</b>
+    正確な浸水想定・避難場所は、お住まいの自治体が公表する最新のハザードマップが優先されます。
+  </div>`;
+}
+function sourceHtml(){
+  return `<div class="src">
+    出典：内閣府「南海トラフの巨大地震モデル検討会（第二次報告）」都府県別市町村別 津波高・到達時間 等の公表値より作成／
+    避難可能距離は総務省消防庁「市町村における津波避難計画策定指針」の考え方を参考。
+  </div>`;
+}
+
+function showResult(el){
+  el.classList.add('show');
+  document.getElementById('inputCard').style.display='none';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function resetTool(){
+  const el=document.getElementById('result');
+  el.classList.remove('show'); el.innerHTML='';
+  document.getElementById('inputCard').style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ===== 共有まわり ===== */
+const PAGE_URL = location.href.split('#')[0];
+let _shareText = '';
+
+function buildShareText(o){
+  const lines = [
+    '【南海トラフ 津波避難診断】',
+    '📍地点：' + o.place,
+    '🌊津波の最短到達時間：' + o.t,
+    '📏想定 最大津波高：' + o.h,
+    '⚠️危険度：' + o.level,
+  ];
+  if(o.esc!=null){
+    lines.push('🏃歩いて逃げられる目安：約' + o.esc + 'm' + (o.escShort?'（極めて短い！すぐ近くの高所が必要）':''));
+  }
+  lines.push('');
+  lines.push('▶強い揺れを感じたら、警報を待たずすぐ高い場所へ。');
+  lines.push('▶避難場所の確認はこちら：');
+  lines.push(PAGE_URL);
+  _shareText = lines.join('\n');
+}
+
+function shareBlock(){
+  const hasNative = (typeof navigator!=='undefined' && navigator.share);
+  return `<div class="share-card">
+    <div class="sh-title">📣 この結果を家族に知らせる</div>
+    <div class="share-grid">
+      <button class="share-btn family" onclick="doShare('any')">
+        <span class="si">👨‍👩‍👧‍👦</span>家族に結果を知らせる
+      </button>
+      ${hasNative?`<button class="share-btn native" onclick="doShare('native')"><span class="si">🔗</span>共有する（アプリを選択）</button>`:''}
+      <button class="share-btn line" onclick="doShare('line')"><span class="si">💬</span>LINE</button>
+      <button class="share-btn sms" onclick="doShare('sms')"><span class="si">📩</span>SMS</button>
+      <button class="share-btn mail" onclick="doShare('mail')"><span class="si">✉️</span>メール</button>
+      <button class="share-btn copy" id="copyBtn" onclick="copyResult()"><span class="si">📋</span>結果をコピー</button>
+    </div>
+  </div>`;
+}
+
+function doShare(kind){
+  const text = _shareText || '南海トラフ 津波避難診断';
+  const subject = '【津波避難診断】結果の共有';
+  if(kind==='native' || kind==='any'){
+    if(navigator.share){
+      navigator.share({title:'南海トラフ 津波避難診断', text:_shareText, url:PAGE_URL}).catch(()=>{});
+      return;
+    }
+    // ネイティブ共有が無い端末では、まずコピーして案内
+    if(kind==='any'){ copyResult(true); return; }
+  }
+  if(kind==='line'){
+    // LINE共有（テキスト＋URL）
+    window.open('https://line.me/R/share?text=' + encodeURIComponent(text), '_blank');
+    return;
+  }
+  if(kind==='sms'){
+    // SMS本文に結果を差し込む（端末でメッセージアプリが開く）
+    window.location.href = 'sms:?&body=' + encodeURIComponent(text);
+    return;
+  }
+  if(kind==='mail'){
+    window.location.href = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(text);
+    return;
+  }
+}
+
+function copyResult(silentFallback){
+  const text = _shareText || '';
+  const btn = document.getElementById('copyBtn');
+  const done = ()=>{
+    if(btn){ btn.classList.add('done'); btn.innerHTML='<span class="si">✅</span>コピーしました'; 
+      setTimeout(()=>{ btn.classList.remove('done'); btn.innerHTML='<span class="si">📋</span>結果をコピー'; },2200); }
+    if(silentFallback) alert('結果をコピーしました。LINEやメッセージに貼り付けて家族に送ってください。');
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done).catch(()=>fallbackCopy(text,done));
+  } else {
+    fallbackCopy(text,done);
+  }
+}
+function fallbackCopy(text,cb){
+  const ta=document.createElement('textarea');
+  ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.focus(); ta.select();
+  try{ document.execCommand('copy'); cb&&cb(); }catch(e){ alert('コピーできませんでした。手動で選択してください。'); }
+  document.body.removeChild(ta);
+}
+
+function dwaBlock(){
+  return `<a class="dwa-link" href="http://bousai0111.info" target="_blank" rel="noopener">
+    <span class="dl-ic">🛡️</span>
+    <span class="dl-tx"><span class="t">DWA防災情報センター</span>
+    <span class="s">地震速報・災害情報をリアルタイムで確認</span></span>
+    <span class="dl-ar">›</span>
+  </a>`;
+}
+
+function resetRow(){
+  return `<div class="reset-row">
+    <button class="reset again" onclick="resetTool()">↺ もう一度診断する</button>
+    <button class="reset" onclick="resetTool()">別の場所で診断</button>
+  </div>`;
+}
+</script>
+</body>
+</html>
