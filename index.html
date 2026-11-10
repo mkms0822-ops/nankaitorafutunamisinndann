@@ -220,7 +220,7 @@
     <div class="wave">🌊</div>
     <h1>南海トラフ <b>津波避難診断</b></h1>
     <p>あなたの地点に、津波は何分で・何メートル来るのか。<br>逃げ切れるのかを確認しましょう。</p>
-    <p style="margin-top:6px;font-size:12px">全国1,892市区町村に対応。北海道〜千葉県の太平洋側は、日本海溝・千島海溝沿いの巨大地震の想定も表示します。</p>
+    <p style="margin-top:6px;font-size:12px">全国1,892市区町村に対応。日本海溝・千島海溝沿いの巨大地震や、日本海側の地震(道府県の想定)の津波も表示します。</p>
   </div>
 
   <!-- 入力 -->
@@ -265,7 +265,9 @@
    ■ 日本海溝・千島海溝 JT(北海道〜千葉県の147市町村)
      内閣府「日本海溝・千島海溝沿いの巨大地震モデル検討会」市町村別一覧表(令和4年3月)の
      最大津波高(満潮位・地殻変動考慮)と、津波高+1mの最短到達時間(水平地殻変動なし)。
-   ■ 日本海側:国の調査(2014年)の市町村別の値は図のみの公表で数値を取り出せないため、案内とリンクのみ。
+   ■ 日本海側・オホーツク海側 JS(16道府県の171市区町村)
+     国の調査(2014年)の市町村別の値は図のみの公表のため、各道府県の津波浸水想定(最大クラス)から収録。
+     高さ・到達時間の基準は道府県ごとに違うので、JS_SRCS の定義を画面に表示する。読み取りが不確かな値は入れていない。
    数値は満潮位・堤防の損壊など厳しい条件を含む想定。実際の値は各自治体の最新ハザードマップが優先。
    ======================================================================= */
 const DATA = {
@@ -355,6 +357,26 @@ const JT = {
   "茨城県":{"北茨城市":[7,4,59,82],"高萩市":[5,4,59,82],"日立市":[5,4,58,82],"東海村":[5,4,61,84],"ひたちなか市":[5,4,58,82],"大洗町":[5,4,61,84],"鉾田市":[5,4,64,86],"鹿嶋市":[6,4,60,84],"神栖市":[6,6,58,80]},
   "千葉県":{"銚子市":[6,4,54,78],"旭市":[7,5,72,92],"匝瑳市":[5,4,81,103],"横芝光町":[4,5,80,103],"山武市":[4,5,80,104],"九十九里町":[4,4,80,105],"大網白里市":[3,4,80,105],"白子町":[4,4,79,104],"長生村":[4,4,78,102],"一宮町":[4,4,76,98],"いすみ市":[5,4,61,93],"御宿町":[4,4,61,86],"勝浦市":[4,3,57,164],"鴨川市":[3,3,59,165],"南房総市":[3,3,61,174],"館山市":[3,4,83,174],"鋸南町":[2,2,null,null],"富津市":[2,3,null,null],"君津市":[2,2,null,null],"木更津市":[2,3,null,null],"袖ケ浦市":[2,2,null,null],"市原市":[2,2,null,null],"千葉市中央区":[2,2,null,null],"千葉市美浜区":[2,2,null,null],"習志野市":[2,2,null,null],"船橋市":[2,2,null,null],"市川市":[2,2,null,null],"浦安市":[2,2,null,null]}
 };
+/* 日本海側(オホーツク海側を含む)の津波想定。道府県の津波浸水想定(最大クラス)より。
+   [最大津波水位(m), 到達時間(分)またはnull, 到達時間の表示文字(区分のとき), 出典キー, 補足] */
+const JS = {
+  "北海道":{"稚内市":[12.0,0,"","hkn","日本海側12.0m・オホーツク海側7.6m"],"豊富町":[6.3,0,"","hkn",""],"礼文町":[20.6,0,"","hkn",""],"利尻富士町":[12.7,0,"","hkn",""],"利尻町":[9.7,0,"","hkn",""],"幌延町":[8.6,0,"","hkn",""],"天塩町":[7.9,0,"","hkn",""],"遠別町":[7.3,1,"","hkn",""],"初山別村":[6.4,16,"","hkn",""],"羽幌町":[8.2,0,"","hkn",""],"苫前町":[7.6,14,"","hkn",""],"小平町":[11.0,20,"","hkn",""],"留萌市":[10.2,28,"","hkn",""],"増毛町":[15.9,12,"","hkn",""],"石狩市":[18.4,11,"","hkn",""],"小樽市":[8.3,17,"","hkn",""],"余市町":[5.8,12,"","hkn",""],"古平町":[7.6,11,"","hkn",""],"積丹町":[20.2,5,"","hkn",""],"神恵内村":[26.6,4,"","hkn",""],"泊村":[19.3,6,"","hkn",""],"共和町":[7.9,9,"","hkn",""],"岩内町":[15.5,3,"","hkn",""],"蘭越町":[18.1,5,"","hkn",""],"寿都町":[18.9,3,"","hkn",""],"島牧村":[24.4,1,"","hkn",""],"せたな町":[26.9,0,"","hkn",""],"八雲町":[11.0,0,"","hkn","旧熊石町側(日本海)の値"],"乙部町":[13.6,1,"","hkn",""],"江差町":[15.8,1,"","hkn",""],"上ノ国町":[12.6,0,"","hkn",""],"奥尻町":[25.2,0,"","hkn",""],"松前町":[26.3,0,"","hkn",""],"猿払村":[5.9,7,"","hko",""],"浜頓別町":[7.2,38,"","hko",""],"枝幸町":[9.2,28,"","hko",""],"雄武町":[10.0,26,"","hko",""],"興部町":[9.3,35,"","hko",""],"紋別市":[7.9,27,"","hko",""],"湧別町":[5.0,18,"","hko",""],"北見市":[4.1,11,"","hko",""],"網走市":[5.4,10,"","hko",""],"小清水町":[3.8,14,"","hko",""],"斜里町":[5.7,8,"","hko",""]},
+  "青森県":{"深浦町":[21.4,3,"","aom",""],"鰺ヶ沢町":[12.0,12,"","aom",""],"つがる市":[11.3,16,"","aom",""],"五所川原市":[10.7,17,"","aom",""],"中泊町":[22.6,12,"","aom",""],"今別町":[3.9,27,"","aom",""],"外ヶ浜町":[9.7,0,"","aom",""],"蓬田村":[2.2,0,"","aom",""],"青森市":[3.7,0,"","aom",""],"平内町":[3.3,7,"","aom",""],"野辺地町":[1.8,null,"","aom",""],"横浜町":[1.7,60,"","aom",""],"むつ市":[8.3,8,"","aom",""],"佐井村":[5.5,9,"","aom",""],"大間町":[5.9,17,"","aom",""]},
+  "秋田県":{"八峰町":[14.1,10,"","akt",""],"能代市":[11.6,10,"","akt",""],"三種町":[12.4,9,"","akt",""],"男鹿市":[10.8,3,"","akt",""],"潟上市":[11.6,23,"","akt",""],"秋田市":[13.5,11,"","akt",""],"由利本荘市":[11.3,9,"","akt",""],"にかほ市":[10.1,9,"","akt",""]},
+  "山形県":{"鶴岡市":[16.3,7,"","ymg",""],"酒田市":[14.3,0,"","ymg","本土13.3m・飛島14.3m(飛島の影響開始は1分未満、本土は8分)"],"遊佐町":[14.9,9,"","ymg",""]},
+  "新潟県":{"糸魚川市":[13.0,5,"5分以内","ngt",""],"上越市":[12.5,5,"5分以内","ngt",""],"柏崎市":[6.7,5,"5〜10分","ngt",""],"出雲崎町":[6.0,5,"5〜10分","ngt",""],"長岡市":[7.8,5,"5分以内","ngt",""],"新潟市北区":[11.8,5,"5分以内","ngt","新潟市全体の値"],"新潟市東区":[11.8,5,"5分以内","ngt","新潟市全体の値"],"新潟市中央区":[11.8,5,"5分以内","ngt","新潟市全体の値"],"新潟市西区":[11.8,5,"5分以内","ngt","新潟市全体の値"],"新潟市西蒲区":[11.8,5,"5分以内","ngt","新潟市全体の値"],"聖籠町":[7.1,5,"5〜10分","ngt",""],"新発田市":[8.7,5,"5〜10分","ngt",""],"胎内市":[10.5,5,"5〜10分","ngt",""],"村上市":[14.0,5,"5分以内","ngt",""],"粟島浦村":[15.0,5,"5分以内","ngt",""],"佐渡市":[12.8,5,"5分以内","ngt",""]},
+  "富山県":{"氷見市":[7.2,0,"","tym",""],"高岡市":[3.3,2,"","tym",""],"射水市":[4.2,0,"","tym",""],"富山市":[5.5,0,"","tym",""],"滑川市":[6.8,0,"","tym",""],"魚津市":[5.5,0,"","tym",""],"黒部市":[5.0,0,"","tym",""],"入善町":[10.2,2,"","tym",""],"朝日町":[6.3,0,"","tym",""]},
+  "石川県":{"加賀市":[4.9,19,"","isk",""],"小松市":[3.4,20,"","isk",""],"能美市":[3.6,20,"","isk",""],"白山市":[3.6,19,"","isk",""],"金沢市":[3.6,20,"","isk",""],"内灘町":[3.8,21,"","isk",""],"かほく市":[3.8,21,"","isk",""],"宝達志水町":[3.6,23,"","isk",""],"羽咋市":[4.6,21,"","isk",""],"志賀町":[6.3,9,"","isk",""],"輪島市":[9.4,0,"","isk","本土8.8m(影響開始1分未満)・舳倉島9.4m"],"珠洲市":[20.0,0,"","isk",""],"能登町":[9.6,2,"","isk",""],"穴水町":[8.7,3,"","isk",""],"七尾市":[7.8,1,"","isk",""]},
+  "福井県":{"あわら市":[3.3,null,"","fki",""],"坂井市":[12.2,null,"","fki",""],"福井市":[4.1,null,"","fki",""],"越前町":[7.2,null,"","fki",""],"南越前町":[2.7,null,"","fki",""],"敦賀市":[4.7,null,"","fki",""],"美浜町":[4.5,null,"","fki",""],"若狭町":[3.8,null,"","fki",""],"小浜市":[5.5,null,"","fki",""],"おおい町":[7.9,null,"","fki",""],"高浜町":[8.7,null,"","fki",""]},
+  "京都府":{"舞鶴市":[8.8,null,"","kyt",""],"宮津市":[3.5,null,"","kyt",""],"与謝野町":[0.6,null,"","kyt",""],"伊根町":[10.9,null,"","kyt",""],"京丹後市":[8.5,null,"","kyt",""]},
+  "兵庫県":{"豊岡市":[4.5,10,"","hyj",""],"香美町":[5.3,13,"","hyj",""],"新温泉町":[4.5,11,"","hyj",""]},
+  "鳥取県":{"岩美町":[4.9,5,"","ttr",""],"鳥取市":[5.8,4,"","ttr",""],"湯梨浜町":[6.6,6,"","ttr",""],"北栄町":[4.9,8,"","ttr",""],"琴浦町":[6.7,5,"","ttr",""],"大山町":[7.4,5,"","ttr",""],"米子市":[4.7,21,"","ttr",""],"日吉津村":[4.9,24,"","ttr",""],"境港市":[3.7,21,"","ttr",""]},
+  "島根県":{"安来市":[1.0,null,"","smn","河川をさかのぼる津波の値"],"松江市":[6.6,2,"","smn",""],"出雲市":[5.0,3,"","smn",""],"大田市":[4.4,7,"","smn",""],"江津市":[4.8,7,"","smn",""],"浜田市":[6.8,7,"","smn",""],"益田市":[4.2,20,"","smn",""],"隠岐の島町":[7.9,23,"","smn",""],"西ノ島町":[7.3,24,"","smn",""],"海士町":[5.3,26,"","smn",""],"知夫村":[4.3,24,"","smn",""]},
+  "山口県":{"下関市":[3.7,26,"","ymc",""],"長門市":[3.4,20,"","ymc",""],"萩市":[2.4,14,"","ymc",""],"阿武町":[3.0,33,"","ymc",""]},
+  "福岡県":{"糸島市":[4.4,24,"","fko",""],"福岡市西区":[3.3,20,"","fko",""],"福岡市早良区":[1.9,30,"","fko",""],"福岡市中央区":[2.2,32,"","fko",""],"福岡市博多区":[2.4,35,"","fko",""],"福岡市東区":[3.4,7,"","fko",""],"新宮町":[2.4,5,"","fko",""],"古賀市":[2.6,1,"","fko",""],"福津市":[3.8,1,"","fko",""],"宗像市":[4.3,3,"","fko",""],"岡垣町":[3.2,4,"","fko",""],"遠賀町":[2.3,33,"","fko",""],"芦屋町":[3.3,25,"","fko",""]},
+  "佐賀県":{"唐津市":[3.4,35,"","sga",""],"玄海町":[2.6,42,"","sga",""],"伊万里市":[2.2,66,"","sga",""]},
+  "長崎県":{"対馬市":[5,null,"","ngs",""],"壱岐市":[7,null,"","ngs",""]}
+};
 
 /* 到達時間の定義と出典(d のキー) */
 const DEF = {
@@ -413,11 +435,50 @@ function jtTable(j){
   </table>`;
 }
 /* 南海トラフの値がある市区町村で、日本海溝・千島海溝の想定もあるときに出すカード */
+/* 日本海側(オホーツク海側を含む)の出典と定義 */
+const JS_SRCS = {
+  hkn:{n:"北海道「北海道日本海沿岸の津波浸水想定について(解説)」(平成29年2月)", u:"https://www.pref.hokkaido.lg.jp/fs/7/0/6/4/4/1/2/_/nihonkai_tsunami_kaisetsu.pdf", h:"最大津波水位(T.P.)", t:"海面変動の影響開始(±20cm)の最短"},
+  hko:{n:"北海道「北海道沿岸市町村別津波浸水想定データ一覧」(オホーツク海沿岸・令和5年2月)", u:"https://www.pref.hokkaido.lg.jp/fs/1/2/9/3/3/7/6/9/_/%E5%8C%97%E6%B5%B7%E9%81%93%E6%B2%BF%E5%B2%B8%E5%B8%82%E7%94%BA%E6%9D%91%E5%88%A5%E6%B4%A5%E6%B3%A2%E6%B5%B8%E6%B0%B4%E6%83%B3%E5%AE%9A%E3%83%87%E3%83%BC%E3%82%BF%E4%B8%80%E8%A6%A7.pdf", h:"最大津波水位(T.P.)", t:"海面変動の影響開始(±20cm)の最短"},
+  aom:{n:"青森県「津波浸水想定について(解説)」(平成27年3月。現在は令和3年版に改定され、値が変わっている可能性あり)", u:"https://www.town.yokohama.lg.jp/index.cfm/8,6727,c,html/6727/20200220-140521.pdf", h:"海岸線の最大津波水位(T.P.・旧想定)", t:"代表地点の影響開始(±20cm)の最短(旧想定)"},
+  akt:{n:"秋田県「津波浸水想定について(解説)」(平成28年3月)", u:"https://www.pref.akita.lg.jp/uploads/public/archive_0000053908_00/%E6%B4%A5%E6%B3%A2%E6%B5%B8%E6%B0%B4%E6%83%B3%E5%AE%9A%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6%EF%BC%88%E8%A7%A3%E8%AA%AC%EF%BC%89.pdf", h:"代表地点の最大津波高(T.P.)", t:"代表地点の影響開始(±20cm)の全断層中の最短"},
+  ymg:{n:"山形県「津波浸水想定について」(平成28年3月)", u:"https://www.pref.yamagata.jp/documents/1693/tunamikaisetu.pdf", h:"津波最高水位(T.P.)", t:"+20cmの津波の最短到達"},
+  ngt:{n:"新潟県「津波浸水想定について(解説)」(平成29年11月)", u:"https://www.pref.niigata.lg.jp/uploaded/attachment/360344.pdf", h:"最高津波水位(T.P.・全海岸線)", t:"影響開始(±20cm)の区分"},
+  tym:{n:"富山県「津波浸水想定について(解説)」(平成29年3月)", u:"https://www.pref.toyama.jp/documents/9136/01067019.pdf", h:"最高津波水位(T.P.)", t:"海面変動の影響開始(±20cm)の最短"},
+  isk:{n:"石川県地域防災計画 津波災害対策編(平成28年度の津波浸水想定。令和6年能登半島地震の前の想定)", u:"https://www.fdma.go.jp/bousaikeikaku/hokuriku/ishikawa/items/01ishikawa_tsunami.pdf", h:"最大津波高(T.P.)", t:"影響開始(±20cm)の最短"},
+  fki:{n:"福井県「津波浸水想定について(解説)」(令和2年10月)", u:"https://www.pref.fukui.lg.jp/doc/sabo/tsunamishinsuisoutei_d/fil/kaisetsu.pdf", h:"最大津波高(T.P.)", t:""},
+  kyt:{n:"京都府「津波浸水想定について(解説)」(平成28年3月)", u:"https://www.pref.kyoto.jp/kikikanri/news/documents/tsunamikaisetsu2.pdf", h:"最高津波水位(T.P.)", t:""},
+  hyj:{n:"兵庫県「日本海沿岸地域 津波浸水想定について(解説)」(平成30年3月)", u:"https://web.pref.hyogo.lg.jp/kk37/documents/nihonkaitsunamikaisetsu.pdf", h:"最高津波水位(T.P.)", t:"初期水位から1m上昇するまでの最短"},
+  ttr:{n:"鳥取県「津波浸水想定について(解説)」(平成30年3月)", u:"https://www.pref.tottori.lg.jp/secure/1115471/kaisetusho.pdf", h:"最大津波高(満潮位を除いた高さ)", t:"海面変動30cmの最短到達"},
+  smn:{n:"島根県「津波浸水想定について(解説)」(平成29年3月)", u:"https://www.pref.shimane.lg.jp/bousai_info/bousai/bousai/bosai_shiryo/tsunamishinsui_souteizuH29.data/tsunamishinsuisoutei_kaisetsu.pdf", h:"津波最高水位(T.P.)", t:"代表地点の影響開始(±20cm)"},
+  ymc:{n:"山口県「日本海沿岸の津波浸水想定 結果について」(平成27年3月)", u:"https://www.pref.yamaguchi.lg.jp/uploaded/attachment/20322.pdf", h:"代表地点の最高津波水位(T.P.)", t:"代表地点の影響開始(±20cm)の最短"},
+  fko:{n:"福岡県「津波浸水想定について(解説)」(平成28年2月)", u:"https://www.pref.fukuoka.lg.jp/uploaded/attachment/16091.pdf", h:"最高津波水位(T.P.)", t:"+20cmの影響開始(主要地点の最短)"},
+  sga:{n:"佐賀県「津波浸水想定(解説書)」(平成27年6月)", u:"https://www.pref.saga.lg.jp/kiji00312186/3_12186_358275_up_13br4avn.pdf", h:"最高津波水位(T.P.)", t:"+20cmの影響開始"},
+  ngs:{n:"長崎県「津波浸水想定について(解説:第2版)」(平成28年10月)", u:"https://www.pref.nagasaki.jp/shared/uploads/2017/03/1490784171.pdf", h:"最高津波水位(T.P.)", t:""}
+};
+function jsInfo(p, c){
+  const a = JS[p] && JS[p][c]; if(!a) return null;
+  const [h, t, tl, src, note] = a;
+  return {h, t, tl, src, note, S: JS_SRCS[src]};
+}
+function jsTimeText(s){
+  if(s.t===null) return '未確認';
+  if(s.tl) return s.tl;
+  return s.t===0 ? '1分未満' : ('約'+s.t+'分');
+}
+/* 日本海側の想定を別カードで出す(主の想定が別にあるとき) */
+function jsCard(s, mainH){
+  const higher = s.h > mainH;
+  return `<div class="escape${higher?' warn':''}">
+    <div class="et">🌊 別の地震の想定:日本海側の地震(道府県の津波浸水想定)</div>
+    <div class="ev">${higher?`より高い <b>${s.h}</b> m の津波が想定されています`:`最大 <b>${s.h}</b> m`}</div>
+    <div class="et" style="margin:8px 0 0">${esc(s.S.h)}。到達時間:${jsTimeText(s)}${s.S.t?`(${esc(s.S.t)})`:''}。${s.note?esc(s.note)+'。':''}出典:<a href="${s.S.u}" target="_blank" rel="noopener" style="color:var(--sea)">${esc(s.S.n)}</a></div>
+  </div>`;
+}
 function jtCard(j, nankaiH){
   const higher = j.h > nankaiH;
   return `<div class="escape${higher?' warn':''}">
     <div class="et">🌊 別の地震の想定:日本海溝・千島海溝沿いの巨大地震</div>
-    <div class="ev">${higher?`南海トラフより高い <b>${j.h}</b> m の津波が想定されています`:`最大 <b>${j.h}</b> m（南海トラフの想定以下）`}</div>
+    <div class="ev">${higher?`より高い <b>${j.h}</b> m の津波が想定されています`:`最大 <b>${j.h}</b> m`}</div>
     ${jtTable(j)}
     <div class="et" style="margin:8px 0 0">出典:<a href="${JT_SRC.url}" target="_blank" rel="noopener" style="color:var(--sea)">${JT_SRC.name}</a>。どの地震でも、強い揺れを感じたらすぐに高い場所へ。</div>
   </div>`;
@@ -504,6 +565,20 @@ function runDiagnosis(){
     buildShareText({ place:p, t:'要・公式ハザードマップ確認', h:'要確認', level:'要確認', esc:null });
     showResult(resEl); return;
   }
+  /* 日本海溝・千島海溝と日本海側の両方があり、日本海側の方が大きいときは日本海側を主に表示する */
+  if((!DATA[p] || !DATA[p].cities[c]) && jtInfo(p,c) && jsInfo(p,c)){
+    const j0 = jtInfo(p,c), s0 = jsInfo(p,c);
+    const R = {crit:3, high:2, mid:1, low:0};
+    const lj = levelOf(j0.t===null?999:j0.t, j0.h), ls = levelOf(s0.t===null?999:s0.t, s0.h);
+    if(R[ls.key] > R[lj.key] || (R[ls.key]===R[lj.key] && s0.h > j0.h)){
+      resEl.innerHTML = renderJs(p, c, addr, s0, j0);
+      buildShareText({ place:p+' '+c+'（日本海側の地震の想定）',
+        t: s0.t!==null ? (jsTimeText(s0)+'（'+s0.S.t+'）') : '未確認（自治体のハザードマップで確認）',
+        h: s0.h+'m（'+s0.S.h+'）', level: levelLabel(ls),
+        esc: s0.t!==null ? escapeDistance(s0.t).dist : null, escShort: s0.t!==null && (s0.t<=5 || escapeDistance(s0.t).dist<=120) });
+      showResult(resEl); return;
+    }
+  }
   if((!DATA[p] || !DATA[p].cities[c]) && jtInfo(p,c)){
     const j = jtInfo(p,c);
     resEl.innerHTML = renderJt(p, c, addr, j);
@@ -511,6 +586,15 @@ function runDiagnosis(){
       t: j.t!==null ? ('約'+j.t+'分（高さ+1mの最短到達・'+j.tModel+'）') : '1mの津波は計算上到達しない',
       h: j.h+'m（'+j.hModel+'）', level: levelLabel(levelOf(j.t, j.h)),
       esc: j.t!==null ? escapeDistance(j.t).dist : null, escShort: j.t!==null && (j.t<=5 || escapeDistance(j.t).dist<=120) });
+    showResult(resEl); return;
+  }
+  if((!DATA[p] || !DATA[p].cities[c]) && jsInfo(p,c)){
+    const s2 = jsInfo(p,c);
+    resEl.innerHTML = renderJs(p, c, addr, s2);
+    buildShareText({ place:p+' '+c+'（日本海側の地震の想定）',
+      t: s2.t!==null ? (jsTimeText(s2)+'（'+s2.S.t+'）') : '未確認（自治体のハザードマップで確認）',
+      h: s2.h+'m（'+s2.S.h+'）', level: levelLabel(levelOf(s2.t===null?999:s2.t, s2.h)),
+      esc: s2.t!==null ? escapeDistance(s2.t).dist : null, escShort: s2.t!==null && (s2.t<=5 || escapeDistance(s2.t).dist<=120) });
     showResult(resEl); return;
   }
   if(!DATA[p] || !DATA[p].cities[c]){
@@ -527,8 +611,11 @@ function runDiagnosis(){
   const jj = jtInfo(p, c);
   const RANK = {crit:3, high:2, mid:1, low:0};
   const lvJ = jj ? levelOf(jj.t===null ? 999 : jj.t, jj.h) : null;
-  const jtWorse = !!(lvJ && RANK[lvJ.key] > RANK[lvN.key]);
-  const lv = jtWorse ? lvJ : lvN;
+  const ss = jsInfo(p, c);
+  const lvS = ss ? levelOf(ss.t===null ? 999 : ss.t, ss.h) : null;
+  const jtWorse = !!(lvJ && RANK[lvJ.key] > RANK[lvN.key] && !(lvS && RANK[lvS.key] > RANK[lvJ.key]));
+  const jsWorse = !!(lvS && RANK[lvS.key] > RANK[lvN.key] && !jtWorse);
+  const lv = jtWorse ? lvJ : (jsWorse ? lvS : lvN);
   const escd = hasT ? escapeDistance(d.t) : null;
   const placeLabel = p + ' ' + c;
   const searchBase = encodeURIComponent((addr? (p+c+addr):(p+c)));
@@ -542,7 +629,7 @@ function runDiagnosis(){
     <div class="verdict lv-${lv.key}">
       <div class="place">${esc(placeLabel)}</div>
       <div class="head">${lv.label}${lv.pill?`<span class="pill crit">${lv.pill}</span>`:''}</div>
-      <div class="desc">${verdictDesc(lv.key, d)}${jtWorse?` <b>この判定は、南海トラフより大きな津波が想定されている「日本海溝・千島海溝沿いの巨大地震」(最大${jj.h}m)にもとづいています。</b>`:''}</div>
+      <div class="desc">${verdictDesc(lv.key, d)}${jtWorse?` <b>この判定は、南海トラフより大きな津波が想定されている「日本海溝・千島海溝沿いの巨大地震」(最大${jj.h}m)にもとづいています。</b>`:''}${jsWorse?` <b>この判定は、日本海側の地震の津波想定(最大${ss.h}m・${esc(ss.S.n.split('「')[0])})にもとづいています。</b>`:''}</div>
     </div>
 
     <div class="metrics">
@@ -560,6 +647,7 @@ function runDiagnosis(){
 
     ${renderEscape(escd, d.t, hasT, noOneMeter)}
     ${jtInfo(p,c) ? jtCard(jtInfo(p,c), d.h) : ''}
+    ${ss ? jsCard(ss, d.h) : ''}
 
     <div class="steps-mini">
       <div class="st">🏃 いますぐ覚えておく避難の基本</div>
@@ -684,7 +772,12 @@ function renderUnknownCity(p, addr){
 function levelLabel(k){ return {crit:'極めて高い危険',high:'高い危険',mid:'中程度の危険',low:'比較的低い危険'}[k.key]; }
 
 function renderJt(p, c, addr, j){
-  const lv = levelOf(j.t===null ? 999 : j.t, j.h);
+  const s = jsInfo(p, c);
+  const RANK = {crit:3, high:2, mid:1, low:0};
+  const lvJ0 = levelOf(j.t===null ? 999 : j.t, j.h);
+  const lvS0 = s ? levelOf(s.t===null ? 999 : s.t, s.h) : null;
+  const jsWorse = !!(lvS0 && RANK[lvS0.key] > RANK[lvJ0.key]);
+  const lv = jsWorse ? lvS0 : lvJ0;
   const hasT = j.t!==null;
   const escd = hasT ? escapeDistance(j.t) : null;
   const searchBase = encodeURIComponent(addr ? (p+c+addr) : (p+c));
@@ -692,7 +785,7 @@ function renderJt(p, c, addr, j){
     <div class="verdict lv-${lv.key}">
       <div class="place">${esc(p)} ${esc(c)}（日本海溝・千島海溝沿いの巨大地震の想定）</div>
       <div class="head">${lv.label}${lv.pill?`<span class="pill crit">${lv.pill}</span>`:''}</div>
-      <div class="desc">${verdictDesc(lv.key)} この地域は南海トラフ地震の津波想定の対象外ですが、<b>日本海溝・千島海溝沿いの巨大地震</b>で津波が想定されています。</div>
+      <div class="desc">${verdictDesc(lv.key)} この地域は南海トラフ地震の津波想定の対象外ですが、<b>日本海溝・千島海溝沿いの巨大地震</b>で津波が想定されています。${jsWorse?` <b>この判定は、より大きな津波が想定されている日本海側の地震(最大${s.h}m)にもとづいています。</b>`:''}</div>
     </div>
     <div class="metrics">
       <div class="metric time">
@@ -707,6 +800,7 @@ function renderJt(p, c, addr, j){
       </div>
     </div>
     ${renderEscape(escd, j.t, hasT, !hasT)}
+    ${s ? jsCard(s, j.h) : ''}
     <div class="escape">
       <div class="et">🌊 モデル別の想定</div>
       ${jtTable(j)}
@@ -741,18 +835,73 @@ function renderJt(p, c, addr, j){
     ${resetRow()}`;
 }
 
+function renderJs(p, c, addr, s, jExtra){
+  const lv = levelOf(s.t===null ? 999 : s.t, s.h);
+  const hasT = s.t!==null;
+  const escd = hasT ? escapeDistance(s.t) : null;
+  const searchBase = encodeURIComponent(addr ? (p+c+addr) : (p+c));
+  return `
+    <div class="verdict lv-${lv.key}">
+      <div class="place">${esc(p)} ${esc(c)}（日本海側の地震の想定）</div>
+      <div class="head">${lv.label}${lv.pill?`<span class="pill crit">${lv.pill}</span>`:''}</div>
+      <div class="desc">${verdictDesc(lv.key)} この地域は南海トラフ地震の国の津波想定の対象外ですが、<b>日本海側の地震</b>による津波が${esc(p)}の想定で示されています。日本海の地震は震源が陸に近く、<b>揺れてから数分で津波が来る</b>場所があります。</div>
+    </div>
+    <div class="metrics">
+      <div class="metric time">
+        <div class="mlabel">津波の最短到達時間</div>
+        <div class="mval"${(hasT && !s.tl && s.t>0)?'':' style="font-size:30px;line-height:1.3"'}>${hasT ? (s.tl ? esc(s.tl) : (s.t===0 ? '1分未満' : '約'+s.t)) : '未確認'}<span class="munit">${(hasT && !s.tl && s.t>0)?'分':''}</span></div>
+        <div class="mnote">${hasT ? esc(s.S.t) : '到達時間は公表資料から確認できませんでした。すぐ来ると考えてください'}</div>
+      </div>
+      <div class="metric height">
+        <div class="mlabel">想定 最大津波高</div>
+        <div class="mval">${s.h}<span class="munit">m</span></div>
+        <div class="mnote">${esc(s.S.h)}</div>
+      </div>
+    </div>
+    ${renderEscape(escd, s.t, hasT, false)}
+    ${jExtra ? jtCard(jExtra, s.h) : ''}
+    ${s.note?`<div class="escape"><div class="et">📝 補足</div><div class="et" style="margin:0">${esc(s.note)}</div></div>`:''}
+    <div class="steps-mini">
+      <div class="st">🏃 いますぐ覚えておく避難の基本</div>
+      <ol>
+        <li>強い揺れ・長い揺れを感じたら、<b>警報を待たずすぐ避難</b>を始める。日本海側は警報より先に津波が来ることがある。</li>
+        <li>目指すのは<b>「より高く・より遠く」</b>。津波避難タワー・避難ビル・高台へ。</li>
+        <li>車は使わず<b>原則徒歩</b>。渋滞で動けなくなる。積雪・凍結時は時間がかかる前提で。</li>
+        <li>一度逃げたら<b>戻らない</b>。第二波以降が高いことも多い。</li>
+      </ol>
+    </div>
+    <div class="actions">
+      <a class="act primary" target="_blank" rel="noopener"
+         href="https://www.google.com/maps/search/%E6%B4%A5%E6%B3%A2%E9%81%BF%E9%9B%A3%E5%A0%B4%E6%89%80+${searchBase}">
+        <span class="ic">📍</span><span class="tx"><span class="t">最寄りの津波避難場所を探す</span>
+        <span class="s">Googleマップで「津波避難場所」を検索</span></span><span class="ar">›</span></a>
+      <a class="act" target="_blank" rel="noopener" href="https://disaportal.gsi.go.jp/maps/index.html?ll=&z=14">
+        <span class="ic">🗺️</span><span class="tx"><span class="t">重ねるハザードマップで浸水域を確認</span>
+        <span class="s">国土交通省・公式</span></span><span class="ar">›</span></a>
+      <a class="act" target="_blank" rel="noopener"
+         href="https://www.google.com/search/?q=${encodeURIComponent(p+c+' 津波 ハザードマップ 避難場所')}">
+        <span class="ic">🏛️</span><span class="tx"><span class="t">${esc(c)}の公式ハザードマップ・避難計画</span>
+        <span class="s">自治体の最新情報がいちばん正確です</span></span><span class="ar">›</span></a>
+    </div>
+    ${disclaimerHtml()}
+    <div class="src">出典:<a href="${s.S.u}" target="_blank" rel="noopener">${esc(s.S.n)}</a>。道府県ごとに、高さの基準(満潮位を含むか)や到達時間の基準(何cmの変化か)が違います。<br>避難可能距離は総務省消防庁「市町村における津波避難計画策定指針」の考え方を参考。</div>
+    ${shareBlock()}
+    ${dwaBlock()}
+    ${resetRow()}`;
+}
+
 function renderNoAssumption(p, c, addr){
   const nankaiPref = !!DATA[p];
   const other = OTHER_TSUNAMI.includes(p);
   let desc;
   if(nankaiPref){
-    desc = `${esc(c)}は、国(内閣府)の南海トラフ巨大地震の想定(令和7年)で津波高の数値が示されていない市区町村です。多くは<b>海に面していない</b>ためです。ただし<b>川沿いや河口近く、海とつながる湖(浜名湖など)の周りの低い土地では、津波がさかのぼって来る</b>ことがあります。また${esc(p)}は南海トラフ地震で<b>強い揺れ</b>が想定される地域です。${JAPAN_SEA.includes(p)?`なお、<b>日本海側の沿岸の市町村</b>では、日本海の地震による津波が国の調査(2014年)で想定されています(市町村別の値は図でのみ公表)。海の近くでは自治体の津波ハザードマップを確認してください。`:''}`;
+    desc = `${esc(c)}は、国(内閣府)の南海トラフ巨大地震の想定(令和7年)で津波高の数値が示されていない市区町村です。多くは<b>海に面していない</b>ためです。ただし<b>川沿いや河口近く、海とつながる湖(浜名湖など)の周りの低い土地では、津波がさかのぼって来る</b>ことがあります。また${esc(p)}は南海トラフ地震で<b>強い揺れ</b>が想定される地域です。${JAPAN_SEA.includes(p)?`なお、<b>日本海側の沿岸の市町村</b>では、日本海の地震による津波が国の調査(2014年)で想定されています。この市区町村については、道府県の津波想定でも数値を収録していません(海に面していない場合が多い)。海の近くでは自治体の津波ハザードマップを確認してください。`:''}`;
   } else if(other && JAPAN_SEA.includes(p)){
-    desc = `${esc(c)}は、国の南海トラフ巨大地震の想定でも、日本海溝・千島海溝沿いの巨大地震の想定(令和4年)でも、津波高の数値が示されていない市区町村です。海に面していない、または<b>日本海側・オホーツク海側</b>の市町村であることが多いです。日本海側の沿岸では、<b>日本海の地震による津波</b>が国の調査(2014年)で想定されています(市町村別の値は図でのみ公表)。海の近くにお住まいの方は、自治体の津波ハザードマップを必ず確認してください。`;
+    desc = `${esc(c)}は、国の南海トラフ巨大地震の想定でも、日本海溝・千島海溝沿いの巨大地震の想定(令和4年)でも、津波高の数値が示されていない市区町村です。海に面していない、または<b>日本海側・オホーツク海側</b>の市町村であることが多いです。日本海側の沿岸では、<b>日本海の地震による津波</b>が国の調査(2014年)で想定されています。この市区町村については、道府県の津波想定でも数値を収録していません(海に面していない場合が多い)。海の近くにお住まいの方は、自治体の津波ハザードマップを必ず確認してください。`;
   } else if(other){
     desc = `${esc(c)}は、国の南海トラフ巨大地震の想定でも、日本海溝・千島海溝沿いの巨大地震の想定(令和4年)でも、津波高の数値が示されていない市区町村です。多くは<b>海に面していない</b>ためです。ただし川沿いの低い土地では、津波が川をさかのぼることがあります。<b>強い揺れ</b>への備えも必要です。`;
   } else if(JAPAN_SEA.includes(p)){
-    desc = `${esc(p)}は、国の南海トラフ巨大地震の想定(令和7年)で津波高の数値が示されていない地域です。ただし<b>日本海側の沿岸では、日本海の地震による津波</b>が国の調査(2014年)で想定されています(市町村別の値は図でのみ公表)。日本海の地震は震源が陸に近く、<b>数分で津波が届く</b>場所もあります。海の近くにお住まいの方は、自治体の津波ハザードマップを必ず確認してください。揺れ・建物倒壊・火災への備えも必要です。`;
+    desc = `${esc(p)}は、国の南海トラフ巨大地震の想定(令和7年)で津波高の数値が示されていない地域です。ただし<b>日本海側の沿岸では、日本海の地震による津波</b>が国の調査(2014年)で想定されています。この市区町村については、道府県の津波想定でも数値を収録していません(海に面していない場合が多い)。日本海の地震は震源が陸に近く、<b>数分で津波が届く</b>場所もあります。海の近くにお住まいの方は、自治体の津波ハザードマップを必ず確認してください。揺れ・建物倒壊・火災への備えも必要です。`;
   } else if(false){
     desc = `${esc(p)}は、国の南海トラフ巨大地震の想定(令和7年)で津波高の数値が示されていない地域です。ただし沿岸部では<b>日本海溝・千島海溝の地震などによる大きな津波</b>が想定されています。海の近くにお住まいの方は、自治体の津波ハザードマップを必ず確認してください。`;
   } else {
