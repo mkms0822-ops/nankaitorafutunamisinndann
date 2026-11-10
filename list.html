@@ -31,6 +31,11 @@
   .hero h1 b{color:var(--sea);}
   .hero p{font-size:13px;color:var(--muted);margin:0;}
 
+  .tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+  .tab{font:inherit;font-size:14px;font-weight:700;padding:10px 8px;border-radius:12px;cursor:pointer;
+    background:var(--panel);border:1px solid var(--line);color:var(--muted);line-height:1.35;}
+  .tab small{display:block;font-size:11px;font-weight:400;}
+  .tab[aria-selected="true"]{background:linear-gradient(100deg,var(--sea-deep),var(--sea));border-color:var(--sea);color:#fff;}
   .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
   .stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 8px;text-align:center;}
   .stat .v{font-family:var(--num);font-size:34px;line-height:1;color:var(--sea);}
@@ -112,10 +117,14 @@
 
   <div class="hero">
     <div class="wave">🗾</div>
-    <h1>南海トラフ <b>津波想定地域一覧</b></h1>
-    <p>国の想定(令和7年)で津波高が示されている市区町村の一覧です。<br>想定のない市区町村も、検索すると表示されます。押すと診断結果を開きます。</p>
+    <h1><b>津波想定地域一覧</b></h1>
+    <p>国の想定で津波高が示されている市区町村の一覧です。<br>想定のない市区町村も、検索すると表示されます。押すと診断結果を開きます。</p>
   </div>
 
+  <div class="tabs" id="tabs" role="tablist">
+    <button class="tab" data-q="nankai" role="tab">南海トラフ<small>令和7年想定</small></button>
+    <button class="tab" data-q="jt" role="tab">日本海溝・千島海溝<small>令和4年想定</small></button>
+  </div>
   <div class="stats" id="stats"></div>
 
   <div class="controls">
@@ -148,7 +157,9 @@
   <div class="note">
     <b>この一覧の見方</b>
     <ul>
-      <li><b>最大津波高</b>は、内閣府の想定(令和7年3月)で11ケースのうち最も高い値です。満潮位・地殻変動を含む最悪条件の概数です。</li>
+      <li><b>「日本海溝・千島海溝」タブ</b>は、北海道〜千葉県の太平洋側などの147市町村です(内閣府 令和4年3月の想定)。最大津波高は日本海溝モデルと千島海溝モデルの高い方、到達時間は「津波高+1m」の早い方です。福島・茨城・千葉などは、南海トラフより高い津波が想定されている場所があります。</li>
+      <li><b>日本海側</b>の津波(国の2014年の調査)は、市町村別の値が図でしか公表されていないため、数値は収録していません。</li>
+      <li><b>南海トラフの最大津波高</b>は、内閣府の想定(令和7年3月)で11ケースのうち最も高い値です。満潮位・地殻変動を含む最悪条件の概数です。</li>
       <li><b>到達時間</b>は、国が市町村別の数値表を公表していないため、都府県・市町村が公表した値を載せています。<b>何cm・何mの津波が来るまでの時間かは自治体ごとに違う</b>ので、名前の下の説明を確認してください。</li>
       <li>「未確認」は公的な数値を確認できなかった市区町村です。到達時間がわからないときは「すぐ来る」と考えてください。</li>
       <li><b>海に面していない市区町村</b>(例:神戸市西区・北区)は国の想定に数値がないため、通常の一覧には出ません。名前で検索すると「津波高の想定がない市区町村」として表示され、診断も開けます。ただし川沿いの低い土地では、津波が川をさかのぼることがあります。</li>
@@ -157,7 +168,7 @@
   </div>
 
   <div class="src">
-    出典:最大津波高は内閣府「南海トラフ巨大地震モデル・被害想定手法検討会」報告書(令和7年3月)の<a href="https://www.bousai.go.jp/jishin/nankai/kento_wg/pdf/ichiran.pdf" target="_blank" rel="noopener">市町村別一覧表</a>。到達時間の出典:
+    <span id="srchead"></span>
     <ul id="srclist"></ul>
   </div>
 </div>
@@ -268,6 +279,18 @@ const MUNI = {
   "沖縄県":"那覇市|宜野湾市|石垣市|浦添市|名護市|糸満市|沖縄市|豊見城市|うるま市|宮古島市|南城市|国頭村|大宜味村|東村|今帰仁村|本部町|恩納村|宜野座村|金武町|伊江村|読谷村|嘉手納町|北谷町|北中城村|中城村|西原町|与那原町|南風原町|渡嘉敷村|座間味村|粟国村|渡名喜村|南大東村|北大東村|伊平屋村|伊是名村|久米島町|八重瀬町|多良間村|竹富町|与那国町"
 };
 
+/* 日本海溝・千島海溝沿いの巨大地震(内閣府 令和4年3月)市町村別一覧表より。
+   [日本海溝モデルの最大津波高(m), 千島海溝モデルの最大津波高(m), 日本海溝モデルの津波高+1m最短到達時間(分), 千島海溝モデルの同(分)]。null は「-」(該当なし) */
+const JT = {
+  "北海道":{"稚内市":[2,3,null,310],"猿払村":[2,2,null,163],"浜頓別町":[2,2,null,152],"枝幸町":[2,4,null,137],"雄武町":[2,4,null,132],"興部町":[2,3,null,132],"紋別市":[2,3,null,129],"湧別町":[2,2,null,null],"北見市":[2,2,null,null],"網走市":[2,4,null,101],"小清水町":[2,3,null,97],"斜里町":[2,3,null,88],"羅臼町":[3,5,224,31],"標津町":[4,7,195,32],"別海町":[4,7,109,54],"根室市":[9,22,39,10],"浜中町":[9,23,36,9],"厚岸町":[12,22,35,9],"釧路町":[11,28,35,9],"釧路市":[9,21,36,16],"白糠町":[10,18,40,21],"浦幌町":[11,22,42,24],"豊頃町":[13,26,42,26],"大樹町":[15,22,40,28],"広尾町":[18,27,31,25],"えりも町":[23,28,4,23],"様似町":[22,18,7,21],"浦河町":[15,12,8,21],"新ひだか町":[11,9,15,41],"新冠町":[11,8,20,46],"日高町":[18,11,26,52],"むかわ町":[12,7,35,63],"厚真町":[10,8,38,67],"苫小牧市":[10,8,33,61],"白老町":[10,4,31,59],"登別市":[13,5,32,61],"室蘭市":[10,4,33,62],"伊達市":[8,5,48,86],"洞爺湖町":[9,5,64,104],"豊浦町":[10,5,68,104],"長万部町":[8,4,72,106],"八雲町":[10,5,60,92],"森町":[12,5,42,71],"鹿部町":[12,6,35,65],"函館市":[10,5,18,50],"北斗市":[9,4,45,79],"木古内町":[10,4,46,80],"知内町":[10,4,51,86],"福島町":[5,3,52,115],"松前町":[4,2,62,236]},
+  "青森県":{"深浦町":[3,2,93,null],"鰺ヶ沢町":[4,2,93,null],"つがる市":[4,2,83,null],"五所川原市":[4,2,77,null],"中泊町":[5,2,63,239],"外ヶ浜町":[7,3,55,94],"今別町":[7,4,55,94],"蓬田村":[5,3,72,250],"青森市":[6,3,79,126],"平内町":[5,3,76,134],"野辺地町":[5,3,99,190],"横浜町":[6,3,96,175],"むつ市":[14,6,24,54],"佐井村":[6,3,41,104],"大間町":[11,4,29,59],"風間浦村":[11,4,24,54],"東通村":[14,7,9,39],"六ヶ所村":[11,7,10,39],"三沢市":[16,9,17,45],"おいらせ町":[18,11,27,55],"八戸市":[27,12,23,50],"階上町":[22,11,22,49]},
+  "岩手県":{"洋野町":[20,14,20,45],"久慈市":[16,16,20,43],"野田村":[18,16,22,47],"普代村":[20,10,18,42],"田野畑村":[21,13,17,42],"岩泉町":[27,12,17,42],"宮古市":[30,13,11,38],"山田町":[22,10,11,38],"大槌町":[15,10,14,43],"釜石市":[19,12,12,41],"大船渡市":[17,10,12,43],"陸前高田市":[13,11,19,51]},
+  "宮城県":{"気仙沼市":[16,10,21,53],"南三陸町":[13,9,26,57],"石巻市":[14,11,28,58],"女川町":[12,9,28,57],"東松島市":[8,6,61,89],"塩竈市":[6,5,66,95],"松島町":[4,4,80,107],"利府町":[5,4,80,108],"多賀城市":[6,5,72,101],"七ヶ浜町":[10,7,67,95],"仙台市宮城野区":[10,7,69,98],"仙台市若林区":[8,7,71,99],"名取市":[9,7,72,100],"岩沼市":[8,8,73,101],"亘理町":[9,7,74,101],"山元町":[10,7,74,101]},
+  "福島県":{"新地町":[10,7,73,99],"相馬市":[17,7,65,91],"南相馬市":[19,8,64,87],"浪江町":[19,7,63,86],"双葉町":[14,7,63,85],"大熊町":[15,6,62,83],"富岡町":[14,6,62,83],"楢葉町":[11,6,61,82],"広野町":[9,6,60,81],"いわき市":[8,5,53,76]},
+  "茨城県":{"北茨城市":[7,4,59,82],"高萩市":[5,4,59,82],"日立市":[5,4,58,82],"東海村":[5,4,61,84],"ひたちなか市":[5,4,58,82],"大洗町":[5,4,61,84],"鉾田市":[5,4,64,86],"鹿嶋市":[6,4,60,84],"神栖市":[6,6,58,80]},
+  "千葉県":{"銚子市":[6,4,54,78],"旭市":[7,5,72,92],"匝瑳市":[5,4,81,103],"横芝光町":[4,5,80,103],"山武市":[4,5,80,104],"九十九里町":[4,4,80,105],"大網白里市":[3,4,80,105],"白子町":[4,4,79,104],"長生村":[4,4,78,102],"一宮町":[4,4,76,98],"いすみ市":[5,4,61,93],"御宿町":[4,4,61,86],"勝浦市":[4,3,57,164],"鴨川市":[3,3,59,165],"南房総市":[3,3,61,174],"館山市":[3,4,83,174],"鋸南町":[2,2,null,null],"富津市":[2,3,null,null],"君津市":[2,2,null,null],"木更津市":[2,3,null,null],"袖ケ浦市":[2,2,null,null],"市原市":[2,2,null,null],"千葉市中央区":[2,2,null,null],"千葉市美浜区":[2,2,null,null],"習志野市":[2,2,null,null],"船橋市":[2,2,null,null],"市川市":[2,2,null,null],"浦安市":[2,2,null,null]}
+};
+
 
 function levelOf(t,h){
   const tt = (typeof t==='number') ? t : Infinity;
@@ -279,41 +302,80 @@ function levelOf(t,h){
 function esc(s){ return String(s).replace(/[&<>"']/g, ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
 
 /* 行データを平らにする */
-const ROWS = [];
-Object.keys(DATA).forEach((p,pi)=>{
-  Object.keys(DATA[p].cities).forEach((c,ci)=>{
-    const e = DATA[p].cities[c];
-    ROWS.push({p, c, h:e.h, t:e.t, d:e.d||null, order:pi*1000+ci,
-      lv: levelOf(e.d==='oitn'?999:e.t, e.h)});
-  });
-});
+const JT_SRC = {src:"内閣府「日本海溝・千島海溝沿いの巨大地震モデル検討会」市町村別一覧表(令和4年3月)", url:"https://www.bousai.go.jp/jishin/nihonkaiko_chishima/model/pdf/hokoku_shichoson.pdf"};
+function buildRows(quake){
+  const rows = [];
+  if(quake==='jt'){
+    Object.keys(JT).forEach((p,pi)=>{
+      const order = (MUNI[p]||'').split('|');
+      Object.keys(JT[p]).forEach(c=>{
+        const [hj,hc,tj,tc] = JT[p][c];
+        const h = Math.max(hj,hc);
+        const ts=[tj,tc].filter(v=>typeof v==='number');
+        const t = ts.length ? Math.min(...ts) : null;
+        const tm = t===null ? '' : (t===tj&&t===tc?'両モデル':(t===tj?'日本海溝モデル':'千島海溝モデル'));
+        rows.push({p, c, h, t, d:null, none1m: t===null,
+          dl: t===null ? `1mの津波は計算上到達しない(日本海溝 ${hj}m・千島海溝 ${hc}m)` : `高さ+1mの最短到達(${tm})。日本海溝 ${hj}m・千島海溝 ${hc}m`,
+          order: pi*1000 + Math.max(0, order.indexOf(c)),
+          lv: levelOf(t===null?999:t, h)});
+      });
+    });
+  } else {
+    Object.keys(DATA).forEach((p,pi)=>{
+      Object.keys(DATA[p].cities).forEach((c,ci)=>{
+        const e = DATA[p].cities[c];
+        rows.push({p, c, h:e.h, t:e.t, d:e.d||null, none1m: e.d==='oitn',
+          dl: e.d ? DEF[e.d].s : '', order:pi*1000+ci,
+          lv: levelOf(e.d==='oitn'?999:e.t, e.h)});
+      });
+    });
+  }
+  return rows;
+}
+let ROWS = [];
+function hasQuake(quake, p, c){ return quake==='jt' ? !!(JT[p] && JT[p][c]) : !!(DATA[p] && DATA[p].cities[c]); }
 
-/* 集計 */
-(function(){
-  const nKnown = ROWS.filter(r=>typeof r.t==='number').length;
+/* 想定地震を切り替えたときに、集計・都道府県・出典を作り直す */
+function setupQuake(quake){
+  ROWS = buildRows(quake);
+  const prefs = [...new Set(ROWS.map(r=>r.p))];
   const maxH = Math.max(...ROWS.map(r=>r.h));
   document.getElementById('stats').innerHTML = `
-    <div class="stat"><div class="v">${Object.keys(DATA).length}</div><div class="l">都道府県</div></div>
+    <div class="stat"><div class="v">${prefs.length}</div><div class="l">都道府県</div></div>
     <div class="stat"><div class="v">${ROWS.length}</div><div class="l">市区町村</div></div>
     <div class="stat"><div class="v">${maxH}<small>m</small></div><div class="l">最大津波高</div></div>`;
   const ps = document.getElementById('pref');
-  Object.keys(DATA).forEach(p=>{ const o=document.createElement('option'); o.value=p; o.textContent=p; ps.appendChild(o); });
-  const used = {};
-  ROWS.forEach(r=>{ if(r.d){ const k=DEF[r.d].src+'|'+DEF[r.d].url; used[k]=DEF[r.d]; } });
-  document.getElementById('srclist').innerHTML = Object.values(used).map(d=>
+  ps.innerHTML = '<option value="">すべての都道府県</option>';
+  prefs.forEach(p=>{ const o=document.createElement('option'); o.value=p; o.textContent=p; ps.appendChild(o); });
+  let srcs;
+  if(quake==='jt') srcs=[JT_SRC];
+  else { const used={}; ROWS.forEach(r=>{ if(r.d){ used[DEF[r.d].src+'|'+DEF[r.d].url]=DEF[r.d]; } }); srcs=Object.values(used); }
+  document.getElementById('srclist').innerHTML = srcs.map(d=>
     `<li>${d.url?`<a href="${d.url}" target="_blank" rel="noopener">${esc(d.src)}</a>`:esc(d.src)}</li>`).join('');
-})();
+  document.getElementById('srchead').innerHTML = quake==='jt'
+    ? '出典:最大津波高・到達時間とも、下記の内閣府の一覧表(満潮位・地殻変動考慮。到達時間は水平地殻変動なしの表の「津波高+1m」)。'
+    : '出典:最大津波高は内閣府「南海トラフ巨大地震モデル・被害想定手法検討会」報告書(令和7年3月)の<a href="https://www.bousai.go.jp/jishin/nankai/kento_wg/pdf/ichiran.pdf" target="_blank" rel="noopener">市町村別一覧表</a>。到達時間の出典:';
+  document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected', t.dataset.q===quake?'true':'false'));
+}
 
-const state = {q:'', pref:'', sort:'def', f:new Set()};
+const state = {q:'', pref:'', sort:'def', f:new Set(), quake:'nankai'};
 /* 前回の絞り込みを覚えておく(使えない環境では無視) */
 try{
   const s = JSON.parse(localStorage.getItem('tsunamiListState')||'null');
-  if(s){ state.pref=s.pref||''; state.sort=s.sort||'def'; (s.f||[]).forEach(x=>state.f.add(x)); }
+  if(s){ state.pref=s.pref||''; state.sort=s.sort||'def'; state.quake=(s.quake==='jt'?'jt':'nankai'); (s.f||[]).forEach(x=>state.f.add(x)); }
 }catch(e){}
-function save(){ try{ localStorage.setItem('tsunamiListState', JSON.stringify({pref:state.pref,sort:state.sort,f:[...state.f]})); }catch(e){} }
+function save(){ try{ localStorage.setItem('tsunamiListState', JSON.stringify({pref:state.pref,sort:state.sort,quake:state.quake,f:[...state.f]})); }catch(e){} }
 
 const qEl=document.getElementById('q'), prefEl=document.getElementById('pref'), sortEl=document.getElementById('sort');
+setupQuake(state.quake);
+if(![...prefEl.options].some(o=>o.value===state.pref)) state.pref='';
 prefEl.value=state.pref; sortEl.value=state.sort;
+document.getElementById('tabs').addEventListener('click', e=>{
+  const t=e.target.closest('.tab'); if(!t || t.dataset.q===state.quake) return;
+  state.quake=t.dataset.q; setupQuake(state.quake);
+  if(![...prefEl.options].some(o=>o.value===state.pref)) state.pref='';
+  prefEl.value=state.pref; save(); render();
+});
 document.querySelectorAll('.chip').forEach(b=>b.setAttribute('aria-pressed', state.f.has(b.dataset.f)?'true':'false'));
 
 qEl.addEventListener('input', ()=>{ state.q=qEl.value.trim(); render(); });
@@ -333,16 +395,15 @@ document.getElementById('chips').addEventListener('click', e=>{
 });
 
 function itemHtml(r, showPref){
-  const def = r.d ? DEF[r.d] : null;
   let tHtml;
   if(typeof r.t==='number') tHtml = `<b>${r.t}</b><small>分</small>`;
-  else if(r.d==='oitn') tHtml = `<b class="na">1m未満</b>`;
+  else if(r.none1m) tHtml = `<b class="na">1m未満</b>`;
   else tHtml = `<b class="na">未確認</b>`;
   const href = `./?pref=${encodeURIComponent(r.p)}&city=${encodeURIComponent(r.c)}`;
   return `<a class="item lv-${r.lv}" href="${href}">
     <span class="bar"></span>
     <span class="nm">${showPref?`<span class="df" style="margin:0 0 1px">${esc(r.p)}</span>`:''}${esc(r.c)}
-      ${def?`<span class="df">${esc(def.s)}</span>`:''}</span>
+      ${r.dl?`<span class="df">${esc(r.dl)}</span>`:''}</span>
     <span class="h"><span class="cap">最大</span><b>${r.h}</b><small>m</small></span>
     <span class="t"><span class="cap">到達</span>${tHtml}</span>
   </a>`;
@@ -357,7 +418,7 @@ function render(){
     if(state.f.has('h10') && r.h<10) return false;
     if(state.f.has('t10') && !(typeof r.t==='number' && r.t<=10)) return false;
     if(state.f.has('known') && typeof r.t!=='number') return false;
-    if(state.f.has('unknown') && (typeof r.t==='number' || r.d==='oitn')) return false;
+    if(state.f.has('unknown') && (typeof r.t==='number' || r.none1m)) return false;
     return true;
   });
   const listEl=document.getElementById('list');
@@ -367,14 +428,14 @@ function render(){
     Object.keys(MUNI).forEach(p=>{
       if(state.pref && p!==state.pref) return;
       MUNI[p].split('|').forEach(c=>{
-        if(DATA[p] && DATA[p].cities[c]) return;
+        if(hasQuake(state.quake, p, c)) return;
         if(c.includes(q) || p.includes(q)) extra.push({p,c});
       });
     });
   }
   const extraHtml = extra.length ? `<section class="pref"><div class="pref-h"><h2>津波高の想定がない市区町村</h2>
       <span class="meta">${extra.length}件</span></div>
-      <p class="count" style="margin:0 2px 8px">国の南海トラフ想定で津波高の数値がない市区町村です(海に面していないなど)。「津波の危険がない」という意味ではありません。</p>
+      <p class="count" style="margin:0 2px 8px">${state.quake==='jt'?'日本海溝・千島海溝の想定':'国の南海トラフ想定'}で津波高の数値がない市区町村です(海に面していない、別の地震の想定のみ、など)。「津波の危険がない」という意味ではありません。押すと、その場所で使える想定で診断します。</p>
       ${extra.slice(0,200).map(r=>`<a class="item lv-none" href="./?pref=${encodeURIComponent(r.p)}&city=${encodeURIComponent(r.c)}">
         <span class="bar"></span><span class="nm"><span class="df" style="margin:0 0 1px">${esc(r.p)}</span>${esc(r.c)}</span>
         <span class="h"><span class="cap">最大</span><b class="na" style="font-family:var(--font);font-size:12px;color:var(--muted);font-weight:400">想定なし</b></span>
