@@ -197,6 +197,8 @@
   .dwa-link .dl-tx .s{font-size:12px;color:var(--muted);}
   .dwa-link .dl-ar{color:var(--muted);font-size:18px;}
 
+  .list-link{display:block;text-align:center;margin-top:12px;font-size:13px;color:var(--sea);text-decoration:none;}
+  .list-link:hover{text-decoration:underline;}
   .reset-row{display:flex;gap:10px;}
   .reset-row .reset{margin-top:0;flex:1;}
   .reset-row .reset.again{border-color:var(--sea);color:var(--sea);font-weight:700;}
@@ -236,6 +238,7 @@
       <input type="text" id="addr" placeholder="例：○○町1-2-3、△△小学校の近く など" autocomplete="off">
     </label>
     <button class="btn-go" id="goBtn" disabled>🌊 津波リスクを診断する</button>
+    <a class="list-link" href="list.html">🗾 津波想定地域一覧を見る（都道府県・市区町村別）›</a>
   </div>
 
   <!-- 結果 -->
@@ -722,8 +725,25 @@ function resetRow(){
   return `<div class="reset-row">
     <button class="reset again" onclick="resetTool()">↺ もう一度診断する</button>
     <button class="reset" onclick="resetTool()">別の場所で診断</button>
-  </div>`;
+  </div>
+  <a class="list-link" href="list.html">🗾 津波想定地域一覧を見る ›</a>`;
 }
+
+/* 一覧ページからのリンク(?pref=…&city=…)で開いたときは、その場所の診断を表示する */
+(function openFromQuery(){
+  let qs;
+  try{ qs = new URLSearchParams(location.search); }catch(e){ return; }
+  const p = qs.get('pref'), c = qs.get('city');
+  if(!p || !(DATA[p] || INLAND_PREFS.includes(p))) return;
+  prefSel.value = p;
+  prefSel.dispatchEvent(new Event('change'));
+  if(DATA[p]){
+    if(!c || !DATA[p].cities[c]) return;
+    citySel.value = c;
+  }
+  checkReady();
+  runDiagnosis();
+})();
 </script>
 </body>
 </html>

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>津波想定地域一覧｜南海トラフ 津波避難診断</title>
+<style>
+  :root{
+    --bg:#0a1420; --panel:#11202f; --panel2:#152838; --line:#23394d;
+    --ink:#eaf2fa; --muted:#8aa3bb; --sea:#1f9be0; --sea-deep:#0d6fb0;
+    --warn:#ffb02e; --crit:#ff2d2d; --safe:#1fc77d; --radius:16px;
+    --font:"Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",system-ui,sans-serif;
+    --num:"Bebas Neue","Arial Narrow",sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:radial-gradient(1100px 500px at 50% -5%, #14324d 0%, transparent 55%), var(--bg);
+    background-color:var(--bg);color:var(--ink);font-family:var(--font);line-height:1.7;
+    min-height:100vh;min-height:100dvh;
+    padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:22px 16px 70px;}
+  a{color:var(--sea);}
+
+  .back{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);text-decoration:none;margin-bottom:14px;}
+  .back:hover{color:var(--ink);}
+  .hero{text-align:center;margin-bottom:22px;}
+  .hero .wave{font-size:36px;line-height:1;margin-bottom:6px;}
+  .hero h1{font-size:23px;margin:0 0 8px;}
+  .hero h1 b{color:var(--sea);}
+  .hero p{font-size:13px;color:var(--muted);margin:0;}
+
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 8px;text-align:center;}
+  .stat .v{font-family:var(--num);font-size:34px;line-height:1;color:var(--sea);}
+  .stat .v small{font-family:var(--font);font-size:12px;color:var(--muted);margin-left:2px;}
+  .stat .l{font-size:11px;color:var(--muted);margin-top:4px;}
+
+  .controls{
+    background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);
+    border-radius:var(--radius);padding:14px;margin-bottom:16px;position:sticky;top:0;z-index:5;
+  }
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .controls input,.controls select{
+    width:100%;padding:11px 12px;border-radius:11px;background:var(--bg);border:1px solid var(--line);
+    color:var(--ink);font-family:inherit;font-size:16px;appearance:none;
+  }
+  .controls input:focus,.controls select:focus{outline:none;border-color:var(--sea);box-shadow:0 0 0 3px rgba(31,155,224,.18);}
+  .controls .q{margin-bottom:10px;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+  .chip{
+    font:inherit;font-size:12px;padding:6px 11px;border-radius:999px;cursor:pointer;
+    background:var(--bg);border:1px solid var(--line);color:var(--muted);
+  }
+  .chip[aria-pressed="true"]{background:var(--sea);border-color:var(--sea);color:#fff;}
+  .count{font-size:12px;color:var(--muted);margin:0 2px 10px;}
+
+  .pref{margin-bottom:18px;}
+  .pref-h{
+    display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+    padding:4px 2px 8px;border-bottom:1px solid var(--line);margin-bottom:8px;
+  }
+  .pref-h h2{font-size:16px;margin:0;}
+  .pref-h .meta{font-size:12px;color:var(--muted);white-space:nowrap;}
+
+  .item{
+    display:grid;grid-template-columns:6px 1fr auto auto;align-items:center;gap:0 12px;
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:10px 12px 10px 0;margin-bottom:6px;text-decoration:none;color:var(--ink);overflow:hidden;
+  }
+  .item:hover{border-color:var(--sea);}
+  .item .bar{align-self:stretch;margin:-10px 0;}
+  .lv-crit .bar{background:var(--crit);} .lv-high .bar{background:#ff7a45;}
+  .lv-mid .bar{background:var(--warn);} .lv-low .bar{background:var(--safe);}
+  .item .nm{font-weight:700;font-size:15px;line-height:1.35;min-width:0;}
+  .item .nm .df{display:block;font-weight:400;font-size:11px;color:var(--muted);line-height:1.45;margin-top:2px;}
+  .item .h,.item .t{text-align:right;line-height:1.1;min-width:58px;}
+  .item .h b{font-family:var(--num);font-size:26px;color:var(--sea);}
+  .item .t b{font-family:var(--num);font-size:26px;color:var(--warn);}
+  .item .t b.na{font-family:var(--font);font-size:12px;color:var(--muted);font-weight:400;}
+  .item small{font-size:11px;color:var(--muted);margin-left:1px;}
+  .item .cap{display:block;font-size:10px;color:var(--muted);}
+
+  .legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted);margin:0 2px 14px;}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px;}
+
+  .note{
+    font-size:12px;color:var(--muted);line-height:1.75;
+    background:rgba(255,176,46,.07);border:1px solid rgba(255,176,46,.25);
+    border-radius:12px;padding:13px 14px;margin:18px 0 14px;
+  }
+  .note b{color:var(--warn);}
+  .note ul{margin:6px 0 0;padding-left:18px;}
+  .empty{text-align:center;color:var(--muted);font-size:14px;padding:30px 0;}
+  .src{font-size:11px;color:var(--muted);line-height:1.8;}
+  .src ul{margin:6px 0 0;padding-left:18px;}
+
+  @media(max-width:600px){ .controls{position:static;} }
+  @media(max-width:420px){
+    .row{grid-template-columns:1fr;}
+    .item{gap:0 8px;}
+    .item .h,.item .t{min-width:48px;}
+    .item .h b,.item .t b{font-size:22px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="./">← 津波避難診断に戻る</a>
+
+  <div class="hero">
+    <div class="wave">🗾</div>
+    <h1>南海トラフ <b>津波想定地域一覧</b></h1>
+    <p>国の想定(令和7年)で津波高が示されている市区町村の一覧です。<br>市区町村を押すと、その場所の診断結果を開きます。</p>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="controls">
+    <input class="q" type="search" id="q" placeholder="市区町村名で検索(例:串本、神戸)" autocomplete="off">
+    <div class="row">
+      <select id="pref" aria-label="都道府県"><option value="">すべての都道府県</option></select>
+      <select id="sort" aria-label="並べ替え">
+        <option value="def">並び:都道府県・市区町村順</option>
+        <option value="h">並び:最大津波高が高い順</option>
+        <option value="t">並び:到達時間が短い順</option>
+      </select>
+    </div>
+    <div class="chips" id="chips">
+      <button class="chip" data-f="h10" aria-pressed="false">10m以上</button>
+      <button class="chip" data-f="t10" aria-pressed="false">10分以内に到達</button>
+      <button class="chip" data-f="known" aria-pressed="false">到達時間あり</button>
+      <button class="chip" data-f="unknown" aria-pressed="false">到達時間 未確認</button>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><i style="background:var(--crit)"></i>極めて高い危険</span>
+    <span><i style="background:#ff7a45"></i>高い危険</span>
+    <span><i style="background:var(--warn)"></i>中程度</span>
+    <span><i style="background:var(--safe)"></i>比較的低い</span>
+  </div>
+  <div class="count" id="count"></div>
+  <div id="list"></div>
+
+  <div class="note">
+    <b>この一覧の見方</b>
+    <ul>
+      <li><b>最大津波高</b>は、内閣府の想定(令和7年3月)で11ケースのうち最も高い値です。満潮位・地殻変動を含む最悪条件の概数です。</li>
+      <li><b>到達時間</b>は、国が市町村別の数値表を公表していないため、都府県・市町村が公表した値を載せています。<b>何cm・何mの津波が来るまでの時間かは自治体ごとに違う</b>ので、名前の下の説明を確認してください。</li>
+      <li>「未確認」は公的な数値を確認できなかった市区町村です。到達時間がわからないときは「すぐ来る」と考えてください。</li>
+      <li><b>海に面していない市区町村</b>(例:神戸市西区・北区)は国の想定に数値がないため、一覧にありません。ただし川沿いの低い土地では、津波が川をさかのぼることがあります。</li>
+      <li>強い揺れを感じたら、数値にかかわらず警報を待たずに高い場所へ避難してください。正確な浸水域・避難場所は自治体のハザードマップが優先です。</li>
+    </ul>
+  </div>
+
+  <div class="src">
+    出典:最大津波高は内閣府「南海トラフ巨大地震モデル・被害想定手法検討会」報告書(令和7年3月)の<a href="https://www.bousai.go.jp/jishin/nankai/kento_wg/pdf/ichiran.pdf" target="_blank" rel="noopener">市町村別一覧表</a>。到達時間の出典:
+    <ul id="srclist"></ul>
+  </div>
+</div>
+
+<script>
+const DATA = {
+  "福島県":{coastal:true,cities:{"いわき市":{"h":4,"t":null},"相馬市":{"h":3,"t":null},"南相馬市":{"h":3,"t":null},"広野町":{"h":3,"t":null},"楢葉町":{"h":3,"t":null},"富岡町":{"h":3,"t":null},"大熊町":{"h":3,"t":null},"双葉町":{"h":3,"t":null},"浪江町":{"h":3,"t":null},"新地町":{"h":3,"t":null}}},
+  "茨城県":{coastal:true,cities:{"日立市":{"h":4,"t":null},"高萩市":{"h":3,"t":null},"北茨城市":{"h":3,"t":null},"ひたちなか市":{"h":4,"t":null},"鹿嶋市":{"h":4,"t":null},"神栖市":{"h":6,"t":null},"鉾田市":{"h":4,"t":null},"大洗町":{"h":4,"t":null},"東海村":{"h":3,"t":null}}},
+  "千葉県":{coastal:true,cities:{"千葉市中央区":{"h":3,"t":null},"千葉市美浜区":{"h":3,"t":null},"銚子市":{"h":9,"t":null},"市川市":{"h":3,"t":null},"船橋市":{"h":3,"t":null},"館山市":{"h":11,"t":31,"d":"tateyama"},"木更津市":{"h":3,"t":null},"旭市":{"h":5,"t":null},"習志野市":{"h":3,"t":null},"勝浦市":{"h":6,"t":null},"市原市":{"h":3,"t":null},"鴨川市":{"h":8,"t":null},"君津市":{"h":3,"t":null},"富津市":{"h":5,"t":null},"浦安市":{"h":3,"t":null},"袖ケ浦市":{"h":2,"t":null},"南房総市":{"h":9,"t":null},"匝瑳市":{"h":5,"t":null},"山武市":{"h":5,"t":null},"いすみ市":{"h":9,"t":null},"大網白里市":{"h":6,"t":null},"九十九里町":{"h":5,"t":null},"横芝光町":{"h":5,"t":null},"一宮町":{"h":7,"t":null},"長生村":{"h":8,"t":null},"白子町":{"h":8,"t":null},"御宿町":{"h":8,"t":null},"鋸南町":{"h":5,"t":null}}},
+  "東京都":{coastal:true,cities:{"中央区":{"h":3,"t":null},"港区":{"h":3,"t":null},"江東区":{"h":3,"t":null},"品川区":{"h":3,"t":null},"大田区":{"h":3,"t":null},"江戸川区":{"h":2,"t":null},"大島町":{"h":17,"t":1,"d":"tky"},"利島村":{"h":15,"t":1,"d":"tky"},"新島村":{"h":28,"t":4,"d":"tky"},"神津島村":{"h":24,"t":4,"d":"tky"},"三宅村":{"h":17,"t":4,"d":"tky"},"御蔵島村":{"h":7,"t":2,"d":"tky"},"八丈町":{"h":17,"t":4,"d":"tky"},"青ヶ島村":{"h":18,"t":4,"d":"tky"},"小笠原村":{"h":20,"t":61,"d":"tkyo"}}},
+  "神奈川県":{coastal:true,cities:{"横浜市鶴見区":{"h":3,"t":null},"横浜市神奈川区":{"h":3,"t":null},"横浜市西区":{"h":3,"t":null},"横浜市中区":{"h":3,"t":null},"横浜市磯子区":{"h":3,"t":null},"横浜市金沢区":{"h":3,"t":null},"川崎市川崎区":{"h":3,"t":null},"横須賀市":{"h":6,"t":null},"平塚市":{"h":4,"t":30,"d":"hira"},"鎌倉市":{"h":10,"t":34,"d":"cao12k"},"藤沢市":{"h":7,"t":32,"d":"fujisawa"},"小田原市":{"h":4,"t":null},"茅ヶ崎市":{"h":5,"t":26,"d":"chiga"},"逗子市":{"h":9,"t":null},"三浦市":{"h":6,"t":null},"葉山町":{"h":7,"t":null},"大磯町":{"h":4,"t":null},"二宮町":{"h":4,"t":null},"真鶴町":{"h":4,"t":null},"湯河原町":{"h":5,"t":null}}},
+  "静岡県":{coastal:true,cities:{"静岡市駿河区":{"h":11,"t":4,"d":"sz"},"静岡市清水区":{"h":11,"t":2,"d":"sz"},"浜松市中央区":{"h":17,"t":5,"d":"szh"},"沼津市":{"h":10,"t":4,"d":"sz"},"熱海市":{"h":5,"t":24,"d":"sz"},"伊東市":{"h":9,"t":19,"d":"sz"},"富士市":{"h":6,"t":3,"d":"sz"},"磐田市":{"h":13,"t":4,"d":"sz"},"焼津市":{"h":10,"t":2,"d":"sz"},"掛川市":{"h":14,"t":5,"d":"sz"},"袋井市":{"h":11,"t":5,"d":"sz"},"下田市":{"h":31,"t":13,"d":"sz"},"湖西市":{"h":16,"t":9,"d":"sz"},"伊豆市":{"h":11,"t":4,"d":"sz"},"御前崎市":{"h":19,"t":4,"d":"sz"},"牧之原市":{"h":14,"t":6,"d":"sz"},"東伊豆町":{"h":14,"t":18,"d":"sz"},"河津町":{"h":13,"t":18,"d":"sz"},"南伊豆町":{"h":25,"t":4,"d":"sz"},"松崎町":{"h":18,"t":4,"d":"sz"},"西伊豆町":{"h":14,"t":4,"d":"sz"},"吉田町":{"h":9,"t":4,"d":"sz"}}},
+  "愛知県":{coastal:true,cities:{"名古屋市港区":{"h":5,"t":102,"d":"cao12a"},"豊橋市":{"h":19,"t":9,"d":"cao12a"},"半田市":{"h":4,"t":74,"d":"cao12a"},"豊川市":{"h":4,"t":82,"d":"cao12a"},"碧南市":{"h":4,"t":66,"d":"cao12a"},"刈谷市":{"h":3,"t":99,"d":"cao12a"},"西尾市":{"h":7,"t":45,"d":"cao12a"},"蒲郡市":{"h":6,"t":65,"d":"cao12a"},"常滑市":{"h":6,"t":64,"d":"cao12a"},"東海市":{"h":5,"t":101,"d":"cao12a"},"知多市":{"h":5,"t":80,"d":"cao12a"},"高浜市":{"h":4,"t":82,"d":"cao12a"},"田原市":{"h":22,"t":12,"d":"cao12a"},"弥富市":{"h":4,"t":87,"d":"cao12a"},"飛島村":{"h":4,"t":95,"d":"cao12a"},"東浦町":{"h":3,"t":90,"d":"cao12a"},"南知多町":{"h":10,"t":37,"d":"cao12a"},"美浜町":{"h":7,"t":55,"d":"cao12a"},"武豊町":{"h":4,"t":66,"d":"cao12a"}}},
+  "三重県":{coastal:true,cities:{"津市":{"h":6,"t":56,"d":"mie"},"四日市市":{"h":5,"t":70,"d":"mie"},"伊勢市":{"h":9,"t":22,"d":"mie"},"松阪市":{"h":7,"t":53,"d":"mie"},"桑名市":{"h":5,"t":87,"d":"mie"},"鈴鹿市":{"h":6,"t":64,"d":"mie"},"尾鷲市":{"h":17,"t":3,"d":"mie"},"鳥羽市":{"h":24,"t":8,"d":"mie"},"熊野市":{"h":18,"t":3,"d":"mie"},"志摩市":{"h":26,"t":4,"d":"mie"},"木曽岬町":{"h":5,"t":84,"d":"mie"},"川越町":{"h":4,"t":81,"d":"mie"},"明和町":{"h":7,"t":30,"d":"mie"},"大紀町":{"h":16,"t":7,"d":"mie"},"南伊勢町":{"h":22,"t":6,"d":"mie"},"紀北町":{"h":19,"t":6,"d":"mie"},"御浜町":{"h":16,"t":6,"d":"mie"},"紀宝町":{"h":11,"t":5,"d":"mie"}}},
+  "大阪府":{coastal:true,cities:{"大阪市此花区":{"h":4,"t":113,"d":"osk"},"大阪市港区":{"h":5,"t":114,"d":"osk"},"大阪市大正区":{"h":5,"t":117,"d":"osk"},"大阪市西淀川区":{"h":4,"t":116,"d":"osk"},"大阪市住之江区":{"h":5,"t":110,"d":"osk"},"堺市堺区":{"h":5,"t":110,"d":"osk"},"堺市西区":{"h":5,"t":101,"d":"osk"},"岸和田市":{"h":5,"t":93,"d":"osk"},"泉大津市":{"h":5,"t":95,"d":"osk"},"貝塚市":{"h":4,"t":88,"d":"osk"},"泉佐野市":{"h":4,"t":81,"d":"osk"},"高石市":{"h":5,"t":102,"d":"osk"},"泉南市":{"h":4,"t":75,"d":"osk"},"阪南市":{"h":4,"t":68,"d":"osk"},"忠岡町":{"h":5,"t":94,"d":"osk"},"田尻町":{"h":4,"t":80,"d":"osk"},"岬町":{"h":4,"t":54,"d":"osk"}}},
+  "兵庫県":{coastal:true,cities:{"神戸市東灘区":{"h":4,"t":83,"d":"kobe"},"神戸市灘区":{"h":4,"t":83,"d":"kobe"},"神戸市兵庫区":{"h":4,"t":83,"d":"kobe"},"神戸市長田区":{"h":3,"t":83,"d":"kobe"},"神戸市須磨区":{"h":3,"t":83,"d":"kobe"},"神戸市垂水区":{"h":3,"t":83,"d":"kobe"},"神戸市中央区":{"h":4,"t":83,"d":"kobe"},"姫路市":{"h":3,"t":119,"d":"hyg"},"尼崎市":{"h":5,"t":113,"d":"hyg"},"明石市":{"h":3,"t":109,"d":"hyg"},"西宮市":{"h":5,"t":111,"d":"hyg"},"洲本市":{"h":7,"t":44,"d":"hyg"},"芦屋市":{"h":5,"t":111,"d":"hyg"},"相生市":{"h":3,"t":128,"d":"hyg"},"加古川市":{"h":3,"t":111,"d":"hyg"},"赤穂市":{"h":3,"t":126,"d":"hyg"},"高砂市":{"h":3,"t":116,"d":"hyg"},"南あわじ市":{"h":9,"t":39,"d":"hyg"},"淡路市":{"h":4,"t":65,"d":"hyg"},"たつの市":{"h":2,"t":null},"播磨町":{"h":3,"t":109,"d":"hyg"}}},
+  "和歌山県":{coastal:true,cities:{"和歌山市":{"h":8,"t":46,"d":"wky"},"海南市":{"h":8,"t":43,"d":"wky"},"有田市":{"h":10,"t":34,"d":"wky"},"御坊市":{"h":16,"t":15,"d":"wky"},"田辺市":{"h":12,"t":15,"d":"wky"},"新宮市":{"h":14,"t":4,"d":"wky"},"湯浅町":{"h":11,"t":36,"d":"wky"},"広川町":{"h":10,"t":35,"d":"wky"},"美浜町":{"h":18,"t":18,"d":"wky"},"日高町":{"h":11,"t":18,"d":"wky"},"由良町":{"h":10,"t":26,"d":"wky"},"印南町":{"h":15,"t":13,"d":"wky"},"みなべ町":{"h":14,"t":14,"d":"wky"},"白浜町":{"h":16,"t":4,"d":"wky"},"すさみ町":{"h":20,"t":4,"d":"wky"},"那智勝浦町":{"h":18,"t":3,"d":"wky"},"太地町":{"h":13,"t":2,"d":"wky"},"串本町":{"h":18,"t":2,"d":"wky"}}},
+  "岡山県":{coastal:true,cities:{"岡山市中区":{"h":3,"t":null},"岡山市東区":{"h":3,"t":null},"岡山市南区":{"h":3,"t":null},"倉敷市":{"h":4,"t":147,"d":"oky"},"玉野市":{"h":3,"t":138,"d":"oky"},"笠岡市":{"h":4,"t":202,"d":"oky"},"備前市":{"h":3,"t":null},"瀬戸内市":{"h":4,"t":null},"浅口市":{"h":3,"t":null}}},
+  "広島県":{coastal:true,cities:{"広島市中区":{"h":4,"t":null},"広島市南区":{"h":4,"t":null},"広島市西区":{"h":4,"t":null},"広島市安芸区":{"h":4,"t":null},"広島市佐伯区":{"h":4,"t":null},"呉市":{"h":4,"t":null},"竹原市":{"h":3,"t":null},"三原市":{"h":3,"t":null},"尾道市":{"h":4,"t":null},"福山市":{"h":4,"t":null},"大竹市":{"h":4,"t":null},"東広島市":{"h":3,"t":null},"廿日市市":{"h":4,"t":null},"江田島市":{"h":5,"t":null},"海田町":{"h":4,"t":null},"坂町":{"h":4,"t":null},"大崎上島町":{"h":4,"t":null}}},
+  "山口県":{coastal:true,cities:{"下関市":{"h":5,"t":null},"宇部市":{"h":4,"t":null},"山口市":{"h":5,"t":null},"防府市":{"h":4,"t":null},"下松市":{"h":4,"t":null},"岩国市":{"h":4,"t":null},"光市":{"h":5,"t":null},"柳井市":{"h":5,"t":null},"周南市":{"h":4,"t":null},"山陽小野田市":{"h":4,"t":null},"周防大島町":{"h":4,"t":null},"和木町":{"h":3,"t":null},"上関町":{"h":4,"t":null},"田布施町":{"h":4,"t":null},"平生町":{"h":4,"t":null}}},
+  "徳島県":{coastal:true,cities:{"徳島市":{"h":7,"t":41,"d":"tks"},"鳴門市":{"h":7,"t":47,"d":"tks"},"小松島市":{"h":6,"t":null},"阿南市":{"h":16,"t":12,"d":"tks"},"牟岐町":{"h":15,"t":6,"d":"tks"},"美波町":{"h":24,"t":null},"海陽町":{"h":22,"t":6,"d":"soumu"},"松茂町":{"h":7,"t":45,"d":"tks"}}},
+  "香川県":{coastal:true,cities:{"高松市":{"h":4,"t":null},"丸亀市":{"h":4,"t":null},"坂出市":{"h":4,"t":null},"観音寺市":{"h":4,"t":null},"さぬき市":{"h":5,"t":null},"東かがわ市":{"h":3,"t":null},"三豊市":{"h":5,"t":null},"土庄町":{"h":3,"t":null},"小豆島町":{"h":4,"t":null},"直島町":{"h":4,"t":null},"宇多津町":{"h":3,"t":null},"多度津町":{"h":4,"t":null}}},
+  "愛媛県":{coastal:true,cities:{"松山市":{"h":4,"t":115,"d":"ehm"},"今治市":{"h":4,"t":161,"d":"ehm"},"宇和島市":{"h":13,"t":19,"d":"ehm"},"八幡浜市":{"h":10,"t":32,"d":"ehmy"},"新居浜市":{"h":4,"t":235,"d":"ehm"},"西条市":{"h":4,"t":222,"d":"ehm"},"大洲市":{"h":4,"t":28,"d":"ehm"},"伊予市":{"h":5,"t":25,"d":"ehm"},"四国中央市":{"h":4,"t":231,"d":"ehm"},"西予市":{"h":10,"t":48,"d":"ehm"},"上島町":{"h":4,"t":355,"d":"ehm"},"松前町":{"h":5,"t":113,"d":"ehm"},"伊方町":{"h":20,"t":46,"d":"ehm"},"愛南町":{"h":17,"t":14,"d":"ehm"}}},
+  "高知県":{coastal:true,cities:{"高知市":{"h":15,"t":null},"室戸市":{"h":23,"t":3,"d":"kochi"},"安芸市":{"h":16,"t":null},"南国市":{"h":15,"t":null},"土佐市":{"h":24,"t":null},"須崎市":{"h":25,"t":null},"宿毛市":{"h":25,"t":null},"土佐清水市":{"h":34,"t":null},"四万十市":{"h":22,"t":null},"香南市":{"h":14,"t":null},"東洋町":{"h":18,"t":null},"奈半利町":{"h":15,"t":null},"田野町":{"h":13,"t":null},"安田町":{"h":14,"t":null},"芸西村":{"h":13,"t":null},"中土佐町":{"h":22,"t":null},"四万十町":{"h":31,"t":null},"大月町":{"h":26,"t":null},"黒潮町":{"h":34,"t":null}}},
+  "福岡県":{coastal:true,cities:{"北九州市門司区":{"h":5,"t":null},"北九州市戸畑区":{"h":3,"t":null},"北九州市小倉北区":{"h":3,"t":null},"北九州市小倉南区":{"h":4,"t":null},"行橋市":{"h":4,"t":null},"豊前市":{"h":4,"t":null},"苅田町":{"h":4,"t":null},"吉富町":{"h":4,"t":null},"築上町":{"h":4,"t":null}}},
+  "長崎県":{coastal:true,cities:{"長崎市":{"h":4,"t":null},"佐世保市":{"h":4,"t":null},"諫早市":{"h":4,"t":null},"平戸市":{"h":3,"t":null},"五島市":{"h":4,"t":null},"西海市":{"h":4,"t":null},"雲仙市":{"h":4,"t":null},"南島原市":{"h":3,"t":null},"小値賀町":{"h":3,"t":null},"新上五島町":{"h":3,"t":null}}},
+  "熊本県":{coastal:true,cities:{"天草市":{"h":4,"t":null},"苓北町":{"h":3,"t":null}}},
+  "大分県":{coastal:true,cities:{"大分市":{"h":9,"t":50,"d":"oit"},"別府市":{"h":5,"t":85,"d":"oit"},"中津市":{"h":4,"t":null,"d":"oitn"},"佐伯市":{"h":14,"t":26,"d":"oit"},"臼杵市":{"h":7,"t":51,"d":"oit"},"津久見市":{"h":9,"t":46,"d":"oit"},"豊後高田市":{"h":4,"t":null,"d":"oitn"},"杵築市":{"h":6,"t":73,"d":"oit"},"宇佐市":{"h":4,"t":null,"d":"oitn"},"国東市":{"h":6,"t":70,"d":"oit"},"姫島村":{"h":4,"t":null,"d":"oitn"},"日出町":{"h":6,"t":null}}},
+  "宮崎県":{coastal:true,cities:{"宮崎市":{"h":15,"t":18,"d":"mzk"},"延岡市":{"h":15,"t":18,"d":"mzk"},"日南市":{"h":13,"t":16,"d":"mzk"},"日向市":{"h":15,"t":18,"d":"mzk"},"串間市":{"h":17,"t":18,"d":"mzk"},"高鍋町":{"h":11,"t":20,"d":"mzk"},"新富町":{"h":10,"t":21,"d":"mzk"},"川南町":{"h":13,"t":20,"d":"mzk"},"都農町":{"h":15,"t":21,"d":"mzk"},"門川町":{"h":12,"t":18,"d":"mzk"}}},
+  "鹿児島県":{coastal:true,cities:{"鹿児島市":{"h":4,"t":null},"鹿屋市":{"h":4,"t":null},"枕崎市":{"h":5,"t":null},"阿久根市":{"h":4,"t":null},"出水市":{"h":2,"t":null},"指宿市":{"h":5,"t":null},"西之表市":{"h":11,"t":null},"垂水市":{"h":4,"t":null},"薩摩川内市":{"h":5,"t":null},"日置市":{"h":4,"t":null},"霧島市":{"h":3,"t":null},"いちき串木野市":{"h":4,"t":null},"南さつま市":{"h":5,"t":null},"志布志市":{"h":7,"t":null},"奄美市":{"h":6,"t":null},"南九州市":{"h":5,"t":null},"姶良市":{"h":3,"t":null},"三島村":{"h":5,"t":null},"十島村":{"h":7,"t":null},"長島町":{"h":4,"t":null},"大崎町":{"h":8,"t":null},"東串良町":{"h":9,"t":null},"錦江町":{"h":3,"t":null},"南大隅町":{"h":7,"t":null},"肝付町":{"h":10,"t":null},"中種子町":{"h":9,"t":null},"南種子町":{"h":9,"t":null},"屋久島町":{"h":13,"t":null},"大和村":{"h":5,"t":null},"宇検村":{"h":4,"t":null},"瀬戸内町":{"h":5,"t":null},"龍郷町":{"h":6,"t":null},"喜界町":{"h":5,"t":null},"徳之島町":{"h":5,"t":null},"天城町":{"h":3,"t":null},"伊仙町":{"h":5,"t":null},"和泊町":{"h":5,"t":null},"知名町":{"h":4,"t":null},"与論町":{"h":4,"t":null}}},
+  "沖縄県":{coastal:true,cities:{"那覇市":{"h":3,"t":null},"宜野湾市":{"h":3,"t":null},"石垣市":{"h":3,"t":null},"浦添市":{"h":3,"t":null},"名護市":{"h":5,"t":null},"糸満市":{"h":4,"t":null},"沖縄市":{"h":3,"t":null},"豊見城市":{"h":4,"t":null},"うるま市":{"h":4,"t":null},"宮古島市":{"h":4,"t":null},"南城市":{"h":4,"t":null},"国頭村":{"h":5,"t":null},"大宜味村":{"h":3,"t":null},"東村":{"h":4,"t":null},"今帰仁村":{"h":4,"t":null},"本部町":{"h":3,"t":null},"恩納村":{"h":3,"t":null},"宜野座村":{"h":3,"t":null},"金武町":{"h":3,"t":null},"伊江村":{"h":3,"t":null},"読谷村":{"h":3,"t":null},"嘉手納町":{"h":3,"t":null},"北谷町":{"h":3,"t":null},"北中城村":{"h":3,"t":null},"中城村":{"h":3,"t":null},"西原町":{"h":3,"t":null},"与那原町":{"h":3,"t":null},"渡嘉敷村":{"h":4,"t":null},"座間味村":{"h":4,"t":null},"粟国村":{"h":3,"t":null},"渡名喜村":{"h":3,"t":null},"南大東村":{"h":4,"t":null},"北大東村":{"h":4,"t":null},"伊平屋村":{"h":4,"t":null},"伊是名村":{"h":3,"t":null},"久米島町":{"h":3,"t":null},"八重瀬町":{"h":3,"t":null},"多良間村":{"h":4,"t":null},"竹富町":{"h":3,"t":null},"与那国町":{"h":3,"t":null}}}
+};
+
+const DEF = {
+  cao12a:  {s:"高さ1mの津波の最短到達(内閣府2012・11ケースの最短)", src:"愛知県「内閣府モデル検討会(2012)資料より作成」", url:"https://www.pref.aichi.jp/uploaded/attachment/36317.pdf"},
+  wky:     {s:"高さ1mの津波の到達(内閣府2012)", src:"和歌山県 津波浸水想定(H25)の比較表「H24内閣府」", url:"https://www.pref.wakayama.lg.jp/prefg/011400/bousai/shinsui/h25sinsui_d/fil/sinnsuisouteih25.pdf"},
+  hyg:     {s:"初期水位から1m上昇(内閣府2012・ケース③)", src:"兵庫県 津波浸水想定の解説書の「国想定」", url:"https://web.pref.hyogo.lg.jp/kk37/documents/nannkaisouteikaisetu.pdf"},
+  kobe:    {s:"初期水位から1m上昇(内閣府2012・ケース③)。神戸市全体の値", src:"兵庫県 津波浸水想定の解説書の「国想定」", url:"https://web.pref.hyogo.lg.jp/kk37/documents/nannkaisouteikaisetu.pdf"},
+  mzk:     {s:"沖合約30m地点で水位+1m(内閣府2012)", src:"宮崎県「地震・津波及び被害の想定について」(2020年)", url:"https://www.pref.miyazaki.lg.jp/documents/4579/4579_20200318114609-1.pdf"},
+  cao12k:  {s:"高さ1mの津波の最短到達(内閣府2012・11ケースの最短)", src:"鎌倉市の資料", url:"https://www.city.kamakura.kanagawa.jp/sougoubousai/documents/0403shiryou2.pdf"},
+  fujisawa:{s:"高さ1mの津波の最短到達(内閣府2012とみられる)", src:"藤沢市「南海トラフ地震」のページ", url:"https://www.city.fujisawa.kanagawa.jp/bousai/bosai/nantora.html"},
+  hira:    {s:"最短到達時間(内閣府2012。何mの津波かは記載なし)", src:"平塚市の資料", url:"https://www.city.hiratsuka.kanagawa.jp/common/200160411.pdf"},
+  chiga:   {s:"最短到達時間(内閣府2012。何mの津波かは記載なし)", src:"茅ヶ崎市のページ", url:"https://www.city.chigasaki.kanagawa.jp/bosai/1001316/1038289.html"},
+  tateyama:{s:"高さ+1mの津波の到達", src:"館山市 津波避難計画(令和7年6月)", url:"https://www.city.tateyama.chiba.jp/files/300393355.pdf"},
+  sz:      {s:"水位+1mの最短到達(静岡県第4次想定・南海トラフ ケース①)", src:"静岡県 第4次地震被害想定(第一次報告)概要", url:"https://www.pref.shizuoka.jp/_res/projects/default_project/_page_/001/029/868/siuzokakendai4jijisinhigaisouteidai1jihoukokugaiyou.pdf"},
+  szh:     {s:"水位+1mの最短到達(静岡県第4次想定・ケース①)。旧南区の値(旧西区は7分)", src:"静岡県 第4次地震被害想定(第一次報告)概要", url:"https://www.pref.shizuoka.jp/_res/projects/default_project/_page_/001/029/868/siuzokakendai4jijisinhigaisouteidai1jihoukokugaiyou.pdf"},
+  mie:     {s:"高さ1mの津波の沿岸への最短到達(三重県想定・理論上最大クラス)", src:"三重県 南海トラフ地震被害想定(本編)", url:"https://www.pref.mie.lg.jp/common/content/001249660.pdf"},
+  osk:     {s:"+1mの津波の襲来(大阪府 津波浸水想定 H25)", src:"大阪府 津波浸水想定の説明資料", url:"https://www.mlit.go.jp/river/shinngikai_blog/shaseishin/kasenbunkakai/bunkakai/dai50kai/siryou3-17.pdf"},
+  oky:     {s:"水位+20cm(影響開始)。1mの到達時間は公表なし(岡山県想定 H25)", src:"岡山県 地震・津波被害想定", url:""},
+  tks:     {s:"高さ+1mの津波の到達(内閣府2025想定)", src:"徳島県が掲載した内閣府の市町別到達時間表", url:"https://www.pref.tokushima.lg.jp/file/attachment/1006122.pdf"},
+  soumu:   {s:"1mの最短到達(想定。基にした想定の記載なし)", src:"総務省 四国行政評価支局の実態調査(H27)", url:"https://www.soumu.go.jp/main_content/000705708.pdf"},
+  ehm:     {s:"波高+1m(愛媛県 地震被害想定 H25)", src:"愛媛県地域防災計画(津波災害対策編)", url:"https://www.fdma.go.jp/bousaikeikaku/items/03_ehime_tunami.pdf"},
+  ehmy:    {s:"波高+1m(愛媛県想定 H25)。伊予灘側の値(宇和海側は51分)", src:"愛媛県地域防災計画(津波災害対策編)", url:"https://www.fdma.go.jp/bousaikeikaku/items/03_ehime_tunami.pdf"},
+  kochi:   {s:"高さ1mの津波の到達(内閣府2012・県内最短)", src:"高知県の政策提言・総務省の実態調査", url:"https://www.pref.kochi.lg.jp/doc/2018082900161/file_contents/JisinTeigen.pdf"},
+  oit:     {s:"水位+1m(大分県想定 H25・内閣府ケース11)。市内の計算地点の最短", src:"大分県 津波浸水予測調査結果(確定値)", url:"https://pref.oita.jp/uploaded/life/287381_350085_misc.pdf"},
+  oitn:    {s:"大分県の想定(H25)では、1mの津波は計算上到達しない", src:"大分県 津波浸水予測調査結果(確定値)", url:"https://pref.oita.jp/uploaded/life/287381_350085_misc.pdf"},
+  tky:     {s:"水位+30cm(影響開始)。南海トラフ以外の地震も含む7地震の重ね合わせ", src:"東京都 津波浸水想定(令和5年3月)", url:"https://www.bousai.metro.tokyo.lg.jp/_res/projects/default_project/_page_/001/023/364/3.pdf"},
+  tkyo:    {s:"水位+30cm(影響開始)・父島の値(母島は75分)。7地震の重ね合わせ", src:"東京都 津波浸水想定(令和5年3月)", url:"https://www.bousai.metro.tokyo.lg.jp/_res/projects/default_project/_page_/001/023/364/3.pdf"}
+};
+
+
+function levelOf(t,h){
+  const tt = (typeof t==='number') ? t : Infinity;
+  if(tt<=5 || h>=20) return 'crit';
+  if(tt<=10 || h>=10) return 'high';
+  if(tt<=30 || h>=5) return 'mid';
+  return 'low';
+}
+function esc(s){ return String(s).replace(/[&<>"']/g, ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+
+/* 行データを平らにする */
+const ROWS = [];
+Object.keys(DATA).forEach((p,pi)=>{
+  Object.keys(DATA[p].cities).forEach((c,ci)=>{
+    const e = DATA[p].cities[c];
+    ROWS.push({p, c, h:e.h, t:e.t, d:e.d||null, order:pi*1000+ci,
+      lv: levelOf(e.d==='oitn'?999:e.t, e.h)});
+  });
+});
+
+/* 集計 */
+(function(){
+  const nKnown = ROWS.filter(r=>typeof r.t==='number').length;
+  const maxH = Math.max(...ROWS.map(r=>r.h));
+  document.getElementById('stats').innerHTML = `
+    <div class="stat"><div class="v">${Object.keys(DATA).length}</div><div class="l">都道府県</div></div>
+    <div class="stat"><div class="v">${ROWS.length}</div><div class="l">市区町村</div></div>
+    <div class="stat"><div class="v">${maxH}<small>m</small></div><div class="l">最大津波高</div></div>`;
+  const ps = document.getElementById('pref');
+  Object.keys(DATA).forEach(p=>{ const o=document.createElement('option'); o.value=p; o.textContent=p; ps.appendChild(o); });
+  const used = {};
+  ROWS.forEach(r=>{ if(r.d){ const k=DEF[r.d].src+'|'+DEF[r.d].url; used[k]=DEF[r.d]; } });
+  document.getElementById('srclist').innerHTML = Object.values(used).map(d=>
+    `<li>${d.url?`<a href="${d.url}" target="_blank" rel="noopener">${esc(d.src)}</a>`:esc(d.src)}</li>`).join('');
+})();
+
+const state = {q:'', pref:'', sort:'def', f:new Set()};
+/* 前回の絞り込みを覚えておく(使えない環境では無視) */
+try{
+  const s = JSON.parse(localStorage.getItem('tsunamiListState')||'null');
+  if(s){ state.pref=s.pref||''; state.sort=s.sort||'def'; (s.f||[]).forEach(x=>state.f.add(x)); }
+}catch(e){}
+function save(){ try{ localStorage.setItem('tsunamiListState', JSON.stringify({pref:state.pref,sort:state.sort,f:[...state.f]})); }catch(e){} }
+
+const qEl=document.getElementById('q'), prefEl=document.getElementById('pref'), sortEl=document.getElementById('sort');
+prefEl.value=state.pref; sortEl.value=state.sort;
+document.querySelectorAll('.chip').forEach(b=>b.setAttribute('aria-pressed', state.f.has(b.dataset.f)?'true':'false'));
+
+qEl.addEventListener('input', ()=>{ state.q=qEl.value.trim(); render(); });
+prefEl.addEventListener('change', ()=>{ state.pref=prefEl.value; save(); render(); });
+sortEl.addEventListener('change', ()=>{ state.sort=sortEl.value; save(); render(); });
+document.getElementById('chips').addEventListener('click', e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  const f=b.dataset.f;
+  if(state.f.has(f)) state.f.delete(f); else {
+    state.f.add(f);
+    if(f==='known') state.f.delete('unknown');
+    if(f==='unknown') { state.f.delete('known'); state.f.delete('t10'); }
+    if(f==='t10') state.f.delete('unknown');
+  }
+  document.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed', state.f.has(x.dataset.f)?'true':'false'));
+  save(); render();
+});
+
+function itemHtml(r, showPref){
+  const def = r.d ? DEF[r.d] : null;
+  let tHtml;
+  if(typeof r.t==='number') tHtml = `<b>${r.t}</b><small>分</small>`;
+  else if(r.d==='oitn') tHtml = `<b class="na">1m未満</b>`;
+  else tHtml = `<b class="na">未確認</b>`;
+  const href = `./?pref=${encodeURIComponent(r.p)}&city=${encodeURIComponent(r.c)}`;
+  return `<a class="item lv-${r.lv}" href="${href}">
+    <span class="bar"></span>
+    <span class="nm">${showPref?`<span class="df" style="margin:0 0 1px">${esc(r.p)}</span>`:''}${esc(r.c)}
+      ${def?`<span class="df">${esc(def.s)}</span>`:''}</span>
+    <span class="h"><span class="cap">最大</span><b>${r.h}</b><small>m</small></span>
+    <span class="t"><span class="cap">到達</span>${tHtml}</span>
+  </a>`;
+}
+
+function render(){
+  const q = state.q;
+  let rows = ROWS.filter(r=>{
+    if(state.pref && r.p!==state.pref) return false;
+    if(q && !(r.c.includes(q) || r.p.includes(q))) return false;
+    if(state.f.has('h10') && r.h<10) return false;
+    if(state.f.has('t10') && !(typeof r.t==='number' && r.t<=10)) return false;
+    if(state.f.has('known') && typeof r.t!=='number') return false;
+    if(state.f.has('unknown') && (typeof r.t==='number' || r.d==='oitn')) return false;
+    return true;
+  });
+  const listEl=document.getElementById('list');
+  document.getElementById('count').textContent = `${rows.length}件を表示`;
+  if(!rows.length){ listEl.innerHTML='<div class="empty">条件に合う市区町村はありません</div>'; return; }
+
+  if(state.sort==='def'){
+    rows.sort((a,b)=>a.order-b.order);
+    const groups={}; rows.forEach(r=>{ (groups[r.p]=groups[r.p]||[]).push(r); });
+    listEl.innerHTML = Object.keys(groups).map(p=>{
+      const g=groups[p]; const mh=Math.max(...g.map(r=>r.h));
+      return `<section class="pref"><div class="pref-h"><h2>${esc(p)}</h2>
+        <span class="meta">${g.length}市区町村・最大${mh}m</span></div>
+        ${g.map(r=>itemHtml(r,false)).join('')}</section>`;
+    }).join('');
+  } else {
+    if(state.sort==='h') rows.sort((a,b)=>b.h-a.h || a.order-b.order);
+    else rows.sort((a,b)=>{
+      const ta=(typeof a.t==='number')?a.t:Infinity, tb=(typeof b.t==='number')?b.t:Infinity;
+      return ta-tb || b.h-a.h;
+    });
+    listEl.innerHTML = rows.map(r=>itemHtml(r,true)).join('');
+  }
+}
+render();
+</script>
+</body>
+</html>
