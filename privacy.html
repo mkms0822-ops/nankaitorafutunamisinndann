@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>プライバシーポリシー・データの出典｜南海トラフ 津波避難診断</title>
+<style>
+  :root{
+    --bg:#0a1420; --panel:#11202f; --panel2:#152838; --line:#23394d;
+    --ink:#eaf2fa; --muted:#8aa3bb; --sea:#1f9be0; --warn:#ffb02e; --radius:16px;
+    --font:"Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:radial-gradient(1100px 500px at 50% -5%, #14324d 0%, transparent 55%), var(--bg);
+    background-color:var(--bg);color:var(--ink);font-family:var(--font);line-height:1.8;
+    padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  }
+  .wrap{max-width:720px;margin:0 auto;padding:22px 16px 70px;}
+  a{color:var(--sea);word-break:break-all;}
+  .back{display:inline-flex;gap:6px;font-size:13px;color:var(--muted);text-decoration:none;margin:0 14px 14px 0;}
+  .back:hover{color:var(--ink);}
+  h1{font-size:22px;margin:6px 0 4px;}
+  .lead{font-size:13px;color:var(--muted);margin:0 0 20px;}
+  .toc{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 18px;margin-bottom:18px;font-size:14px;}
+  .toc ol{margin:0;padding-left:20px;}
+  section{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:14px;}
+  h2{font-size:16px;margin:0 0 10px;}
+  h3{font-size:14px;margin:14px 0 6px;color:var(--sea);}
+  p,li{font-size:14px;}
+  p{margin:0 0 8px;}
+  ul,ol{margin:0 0 8px;padding-left:20px;}
+  li{margin-bottom:4px;}
+  .tbl{width:100%;border-collapse:collapse;font-size:13px;margin:6px 0 10px;}
+  .tbl th,.tbl td{border-top:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:top;}
+  .tbl th{color:var(--muted);font-weight:400;font-size:12px;white-space:nowrap;}
+  .tbl td.y{white-space:nowrap;font-weight:700;}
+  .note{font-size:12px;color:var(--muted);}
+  .box{background:rgba(255,176,46,.07);border:1px solid rgba(255,176,46,.25);border-radius:12px;padding:12px 14px;font-size:13px;}
+  .box b{color:var(--warn);}
+  .date{font-size:12px;color:var(--muted);text-align:right;margin-top:16px;}
+  @media(max-width:480px){
+    .tbl, .tbl tbody, .tbl tr, .tbl td{display:block;width:100%;}
+    .tbl thead{display:none;}
+    .tbl tr{border-top:1px solid var(--line);padding:6px 0;}
+    .tbl td{border:none;padding:2px 0;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="./">← 津波避難診断に戻る</a><a class="back" href="list.html">津波想定地域一覧 ›</a>
+
+  <h1>プライバシーポリシー・データの出典</h1>
+  <p class="lead">「南海トラフ 津波避難診断」(以下「当サイト」)で入力された情報の扱いと、診断に使っている数値の出典をまとめています。</p>
+
+  <div class="toc">
+    <ol>
+      <li><a href="#p1">取得する情報と使い道</a></li>
+      <li><a href="#p2">外部のサービスに送られる情報</a></li>
+      <li><a href="#p3">位置情報(現在地)</a></li>
+      <li><a href="#p4">端末への保存・Cookie・アクセス解析</a></li>
+      <li><a href="#p5">診断に使うデータの出典と年</a></li>
+      <li><a href="#p6">免責事項</a></li>
+      <li><a href="#p7">このポリシーの変更</a></li>
+    </ol>
+  </div>
+
+  <section id="p1">
+    <h2>1. 取得する情報と使い道</h2>
+    <p>当サイトは、診断のために次の情報を入力・取得します。<b>当サイトの運営者のサーバーに送ったり、保存したりすることはありません。</b>処理はすべて利用者の端末(ブラウザ)の中で行います。</p>
+    <ul>
+      <li><b>都道府県・市区町村の選択:</b>市区町村ごとの津波想定を表示するために使います。外部には送りません。</li>
+      <li><b>詳しい住所(任意):</b>その地点が津波浸水想定区域に入るかを調べるために使います。後述の国土地理院の住所検索に送ります。</li>
+      <li><b>現在地(任意):</b>「現在地で調べる」を押したときだけ取得し、市区町村の判定と浸水想定区域の判定に使います。</li>
+    </ul>
+    <p>氏名・電話番号・メールアドレスなど、個人を特定する情報の入力欄はありません。</p>
+  </section>
+
+  <section id="p2">
+    <h2>2. 外部のサービスに送られる情報</h2>
+    <p>当サイトの機能を使うと、次の外部サービスに情報が送られます。送られた情報の扱いは、各サービスの方針に従います。</p>
+    <table class="tbl">
+      <thead><tr><th>送り先</th><th>送られる情報</th><th>送られるとき</th></tr></thead>
+      <tbody>
+        <tr><td>国土地理院 住所検索</td><td>入力した住所(前に都道府県・市区町村名を付けたもの)</td><td>住所を入れて診断したとき</td></tr>
+        <tr><td>国土地理院 逆ジオコーダ</td><td>現在地の緯度・経度</td><td>「現在地で調べる」を押したとき</td></tr>
+        <tr><td>国土地理院 標高API</td><td>地点の緯度・経度</td><td>地点の判定をするとき</td></tr>
+        <tr><td>ハザードマップポータルサイト(国土地理院)の地図データ</td><td>地点を含む地図画像の番号(緯度・経度から計算した区画)</td><td>地点の判定をするとき</td></tr>
+        <tr><td>Google マップ・Google 検索</td><td>市区町村名と、入力した住所(リンクのURLに含まれます)</td><td>「避難場所を探す」「高台を探す」「公式ハザードマップ」などのリンクを押したとき</td></tr>
+        <tr><td>重ねるハザードマップ(国土地理院)</td><td>地点の緯度・経度(リンクのURLに含まれます)</td><td>「この地点を見る」のリンクを押したとき</td></tr>
+        <tr><td>LINE・SMS・メールなどのアプリ</td><td>診断結果の文面(地点名・市区町村名を含みます)</td><td>共有ボタンを押したとき。送り先は利用者が選びます</td></tr>
+      </tbody>
+    </table>
+    <p class="note">住所を入れずに診断した場合、外部に送られるのはリンクを押したときだけです。共有の文面に含まれるのは都道府県・市区町村名までで、詳しい住所や現在地の位置は含めていません。</p>
+    <p class="note">各サービスの方針:<a href="https://www.gsi.go.jp/" target="_blank" rel="noopener">国土地理院</a>/<a href="https://policies.google.com/privacy?hl=ja" target="_blank" rel="noopener">Google</a>/<a href="https://docs.github.com/ja/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">GitHub(当サイトの配信元)</a></p>
+  </section>
+
+  <section id="p3">
+    <h2>3. 位置情報(現在地)</h2>
+    <ul>
+      <li>現在地は、「📍 現在地で調べる」を押し、ブラウザの確認画面で利用者が許可したときだけ取得します。</li>
+      <li>取得した緯度・経度は、その場の判定に使うだけで、端末にも当サイトにも保存しません。</li>
+      <li>許可はブラウザや端末の設定から、いつでも取り消せます。</li>
+    </ul>
+  </section>
+
+  <section id="p4">
+    <h2>4. 端末への保存・Cookie・アクセス解析</h2>
+    <ul>
+      <li><b>Cookie とアクセス解析ツールは使っていません。</b>広告も表示していません。</li>
+      <li>津波想定地域一覧のページでは、使いやすさのため、<b>選んだタブ・都道府県・並べ替え・絞り込みの条件だけ</b>をブラウザの保存領域(localStorage)に保存します。住所や位置情報は保存しません。ブラウザのサイトデータを消すと削除されます。</li>
+      <li>当サイトは GitHub Pages で配信しています。配信元の GitHub 社が、アクセスの記録(IPアドレスなど)を取得することがあります。</li>
+    </ul>
+  </section>
+
+  <section id="p5">
+    <h2>5. 診断に使うデータの出典と年</h2>
+    <p>国(内閣府)は、市町村別の<b>津波の到達時間</b>を数値の一覧表で公表していません(2012年版・2025年版とも地図のみ)。そのため到達時間は、地域ごとに次の資料の値を使っています。どの資料の値かは、診断結果の到達時間の下に表示しています。</p>
+
+    <h3>最大津波高</h3>
+    <table class="tbl">
+      <thead><tr><th>年</th><th>資料</th><th>対象</th></tr></thead>
+      <tbody>
+        <tr><td class="y">2025年(令和7年3月)</td><td>内閣府「南海トラフ巨大地震モデル・被害想定手法検討会」報告書の<a href="https://www.bousai.go.jp/jishin/nankai/kento_wg/pdf/ichiran.pdf" target="_blank" rel="noopener">市町村別一覧表</a></td><td>南海トラフ(25都府県・413市区町村)</td></tr>
+        <tr><td class="y">2022年(令和4年3月)</td><td>内閣府「日本海溝・千島海溝沿いの巨大地震モデル検討会」の<a href="https://www.bousai.go.jp/jishin/nihonkaiko_chishima/model/pdf/hokoku_shichoson.pdf" target="_blank" rel="noopener">市町村別一覧表</a></td><td>日本海溝・千島海溝(北海道〜千葉県の147市町村)</td></tr>
+        <tr><td class="y">2015〜2020年</td><td>各道府県の津波浸水想定(最大クラス)</td><td>日本海側・オホーツク海側(16道府県・171市区町村)</td></tr>
+      </tbody>
+    </table>
+
+    <h3>津波の到達時間</h3>
+    <table class="tbl">
+      <thead><tr><th>年</th><th>資料</th><th>使っている地域</th></tr></thead>
+      <tbody>
+        <tr><td class="y">2012年(平成24年8月)</td><td>内閣府「南海トラフの巨大地震モデル検討会」(第二次報告)の値を、県・市が転載したもの</td><td>愛知県・和歌山県・兵庫県・宮崎県、鎌倉市・藤沢市・平塚市・茅ヶ崎市、高知県室戸市</td></tr>
+        <tr><td class="y">2025年(令和7年)</td><td>内閣府の新しい南海トラフ想定の値(徳島県が掲載した表)</td><td>徳島県の5市町</td></tr>
+        <tr><td class="y">2022年(令和4年3月)</td><td>内閣府「日本海溝・千島海溝沿いの巨大地震モデル検討会」の市町村別一覧表</td><td>北海道〜千葉県の太平洋側など</td></tr>
+        <tr><td class="y">2013年(平成25年)</td><td>県の独自想定:静岡県 第4次地震被害想定、大阪府 津波浸水想定、愛媛県 地震被害想定、大分県 津波浸水予測、岡山県 地震・津波被害想定</td><td>各府県</td></tr>
+        <tr><td class="y">2023年(令和5年3月)</td><td>東京都 津波浸水想定(南海トラフ以外も含む7つの地震の重ね合わせ)</td><td>伊豆・小笠原諸島</td></tr>
+        <tr><td class="y">2025年度</td><td>三重県 南海トラフ地震被害想定</td><td>三重県</td></tr>
+        <tr><td class="y">2025年(令和7年6月)</td><td>館山市 津波避難計画</td><td>千葉県館山市</td></tr>
+        <tr><td class="y">2015〜2020年</td><td>各道府県の津波浸水想定。青森県は2015年の旧想定(現在は2021年版に改定)、石川県は2024年の能登半島地震より前の想定</td><td>日本海側・オホーツク海側</td></tr>
+      </tbody>
+    </table>
+
+    <h3>住所の地点の判定</h3>
+    <ul>
+      <li>浸水想定区域と浸水の深さ:ハザードマップポータルサイト「重ねるハザードマップ」の津波浸水想定(各都道府県が設定した最大クラスの想定。出典:ハザードマップポータルサイト)</li>
+      <li>住所の位置・標高・現在地の市区町村:国土地理院の住所検索・標高API・逆ジオコーダ</li>
+      <li>市区町村の一覧(全国1,892):日本郵便の郵便番号データ</li>
+    </ul>
+
+    <div class="box"><b>注意:</b>資料によって、何cm・何mの津波が来るまでの時間か(±20cmの変化、30cm、+1mなど)や、高さの基準(満潮位を含むか)が違います。最大津波高(2025年)と到達時間(2012年など)で資料の年がずれている地域もあります。数値は目安として使い、お住まいの自治体の最新のハザードマップを優先してください。</div>
+  </section>
+
+  <section id="p6">
+    <h2>6. 免責事項</h2>
+    <ul>
+      <li>当サイトの数値は、公表された想定をもとにした目安です。実際の津波の高さ・到達時間と一致するとは限りません。</li>
+      <li>住所の位置は町名の中心などになることがあり、地点の判定は正確でない場合があります。</li>
+      <li>当サイトの情報を使ったことで生じた損害について、運営者は責任を負いかねます。<b>強い揺れを感じたら、数値にかかわらず、警報を待たずにすぐ高い場所へ避難してください。</b></li>
+    </ul>
+  </section>
+
+  <section id="p7">
+    <h2>7. このポリシーの変更</h2>
+    <p>機能の追加やデータの更新にあわせて、このページの内容を変更することがあります。変更後の内容は、このページに掲載した時点から適用します。</p>
+  </section>
+
+  <p class="date">制定:2026年11月11日</p>
+</div>
+</body>
+</html>

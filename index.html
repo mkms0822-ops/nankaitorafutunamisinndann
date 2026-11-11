@@ -221,6 +221,7 @@
   .pt-sep{font-size:12px;color:var(--muted);margin:-4px 2px 10px;}
   .list-link{display:block;text-align:center;margin-top:12px;font-size:13px;color:var(--sea);text-decoration:none;}
   .list-link:hover{text-decoration:underline;}
+  .list-link.sub{margin-top:6px;font-size:12px;color:var(--muted);}
   .reset-row{display:flex;gap:10px;}
   .reset-row .reset{margin-top:0;flex:1;}
   .reset-row .reset.again{border-color:var(--sea);color:var(--sea);font-weight:700;}
@@ -264,6 +265,7 @@
     <button class="btn-go" id="goBtn" disabled>🌊 津波リスクを診断する</button>
     <button class="btn-geo" id="geoBtn" type="button">📍 現在地で調べる</button>
     <a class="list-link" href="list.html">🗾 津波想定地域一覧を見る（都道府県・市区町村別）›</a>
+    <a class="list-link sub" href="privacy.html">プライバシーポリシー・データの出典</a>
   </div>
 
   <!-- 結果 -->
@@ -1314,7 +1316,8 @@ function resetRow(){
     <button class="reset again" onclick="resetTool()">↺ もう一度診断する</button>
     <button class="reset" onclick="resetTool()">別の場所で診断</button>
   </div>
-  <a class="list-link" href="list.html">🗾 津波想定地域一覧を見る ›</a>`;
+  <a class="list-link" href="list.html">🗾 津波想定地域一覧を見る ›</a>
+  <a class="list-link sub" href="privacy.html">プライバシーポリシー・データの出典</a>`;
 }
 
 /* 一覧ページからのリンク(?pref=…&city=…)で開いたときは、その場所の診断を表示する */
